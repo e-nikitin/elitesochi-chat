@@ -1,23 +1,27 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
+    <CustomProducts/>
+    <Page/>
   </div>
 </template>
 
 <script>
+import CustomProducts from '@/pages/CustomProducts'
+import Page from '@/pages/Page'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Page,
+    CustomProducts,
+  }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+*,*::before,*::after{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 </style>

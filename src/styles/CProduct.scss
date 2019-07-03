@@ -1,0 +1,136 @@
+@import "@/styles/default.scss";
+
+.product{
+  text-decoration: none;
+  cursor: pointer;
+  font-family: sans-serif;
+  &:hover{
+    .product__title{
+      text-decoration: underline;
+    }
+  }
+  &__title{
+    color: #000000;
+    font-size: 20px;
+    font-weight: 300;
+    margin-bottom: 14px;
+    line-height: 25px;
+    text-decoration: none;
+  }
+  &__img{
+    border-radius: 5px;
+    object-fit: cover;
+    width: 100%;
+    --height: 197px;
+    height: var(--height);
+    min-height: var(--height);
+    max-height: var(--height);
+    margin-bottom: 16px;
+  }
+  &__price{
+    color: #555555;
+    font-size: 25px;
+    font-weight: 100;
+    margin: 0 0 -1px;
+    &--from{
+      margin-top: -9px;
+      font-size: 20px;
+      font-weight: 100;
+    }
+    &--to{
+      color: #929292;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+  }
+  &__m2{
+    color: #929292;
+    font-size: 13px;
+    margin: 0 0 5px;
+    line-height: 25px;
+  }
+  &__location{
+    color: rgb(0, 0, 0);
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 25px;
+    text-align: left;
+  }
+  &:visited{
+    color: black;
+  }
+  &:link{
+    color: black;
+  }
+  &__attr{
+    display: inline-block;
+    margin: 0px;
+    margin-top: 5px;
+    margin-right: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    line-height: 20px;
+    color: white;
+    vertical-align: top;
+    padding: 3px 5px;
+    font-size: 13px;
+    border-radius: 3px;
+    &:last-of-type{
+      margin-bottom: 10px;
+    }
+  }
+  &__apartments{
+    color: #929292;
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  &__microdistrict{
+    color: #000000;
+    font-size: 13px;
+  }
+  &--search{
+    .product__img{
+      --height: 127px;
+      height: var(--height);
+      min-height: var(--height);
+      max-height: var(--height);
+    }
+  }
+}
+
+@media(max-width: 1400px){
+  .product{
+    &__img{
+      --height: 150px;
+    }
+  }
+}
+@media(max-width: 1024px){
+  .product{
+    &__img{
+      --height: 227px;
+    }
+  }
+}
+@media(max-width: 980px){
+  .product{
+    &__img{
+      --height: 178px;
+    }
+  }
+}
+@media(max-width: 860px){
+  .product{
+    &__img{
+      --height: 30.45vw;
+    }
+  }
+}
+@media(max-width: 450px){
+  .product{
+    &__img{
+      --height: 57vw;
+    }
+  }
+}

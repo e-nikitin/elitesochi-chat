@@ -2,14 +2,18 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import router from './router'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+import DragItDude from 'vue-drag-it-dude';
 
 Vue.config.productionTip = false
+
+Vue.use(VueAxios, axios)
+Vue.component('vue-drag-it-dude', DragItDude)
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
-  router,
   components: { App },
   template: '<App/>'
 })
