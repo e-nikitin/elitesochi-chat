@@ -22,12 +22,11 @@ export default {
 
 <style scoped lang="scss">
 .page{
-  position: relative;
+  position: absolute;
   display: block;
   top: 0;
   left: 0;
   width: calc(100vw - 24px);
   height: 100vh;
-  background-color: #00becc;
 }
 </style>

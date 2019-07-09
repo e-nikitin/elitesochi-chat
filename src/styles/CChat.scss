@@ -1,6 +1,9 @@
 @import "@/styles/default.scss";
 
 .chat{
+  --chat-width: calc(100vw - 134px);
+  --input-width: 512px;
+  --translation: 590px;
   &__chat{
     position: fixed;
     width: 100vw;
@@ -8,7 +11,7 @@
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.959);
-    opacity: 0.9;
+    z-index: 1000;
   }
   &__messages{
     overflow: auto;
@@ -16,9 +19,12 @@
     top: 70px;
     width: calc(100vw - 30px);
     position: relative;
+    left: 50%;
+    transform: translateX(-50%);
   }
   &__date{
-    width: 945px;
+    max-width: 945px;
+    width: calc(100vw - 100px);
     position: relative;
     left: 50%;
     transform: translateX(-50%);
@@ -33,25 +39,31 @@
       background-color: #FFFFFF;
       opacity: 0.5;
       content: '';
-      display: inline-block;
       height: 1px;
-      position: relative;
+      position: absolute;
       vertical-align: middle;
-      width: 30%;
+      max-width: 40%;
+      width: calc(50vw - 100px - 57px);
       margin-top: -1px;
       margin-right: 20px;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
     }
     &::after{
       background-color: #FFFFFF;
       opacity: 0.5;
       content: '';
-      display: inline-block;
       height: 1px;
-      position: relative;
+      position: absolute;
       vertical-align: middle;
-      width: 30%;
+      max-width: 40%;
+      width: calc(50vw - 100px - 57px);
       margin-top: -1px;
       margin-left: 20px;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
     }
   }
   &__text{
@@ -70,14 +82,23 @@
     position: relative;
     font-weight: 500;
     max-width: 535px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   &__time{
     position: absolute;
     font-size: 10px;
     color: white;
-    top: 100%;
-    right: 0;
+    top: calc(100% + 3px);
     opacity: 0.5;
+  }
+  &__avatar{
+    display: block;
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+
   }
   &__message{
     width: 100%;
@@ -85,12 +106,13 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    position: relative;
     &--manager{
       .chat__text{
-
+        margin-left: 46px;
       }
       .chat__time{
-
+        left: 20px;
       }
     }
     &--client{
@@ -99,7 +121,7 @@
         background-color: #bde2b0;
       }
       .chat__time{
-
+        right: 3px;
       }
     }
   }
@@ -109,10 +131,12 @@
     top: 0;
     width: 100vw;
     background-color: #fff;
+    z-index: 1000;
   }
   &__wrapper{
     &--products{
-      width: 1104px;
+      width: var(--chat-width);
+      max-width: 1104px;
       left: 50%;
       transform: translateX(-50%);
       height: 66px;
@@ -137,7 +161,6 @@
     }
   }
   &__button{
-    --translation: 550px;
     z-index: 3;
     top: 8px;
     position: absolute;
@@ -165,9 +188,9 @@
     }
     &--close{
       background-image: url(./../assets/close.svg);
-      top: 80px;
+      top: 10px;
       transform: scale(1.5);
-      right: 60px;
+      right: 10px;
       left: unset;
     }
   }
@@ -177,11 +200,13 @@
     justify-content: center;
     height: 57px;
     position: relative;
+    transition: left 0.2s linear;
   }
   &__product{
     --color: black;
-    max-width: 202px;
-    min-width: 202px;
+    --product-width: 202px;
+    max-width: var(--product-width);
+    min-width: var(--product-width);
     height: 100%;
     position: relative;
     cursor: pointer;
@@ -226,6 +251,7 @@
     height: 100%;
     left: 0;
     object-fit: cover;
+    pointer-events: none;
   }
   &__name{
     position: absolute;
@@ -256,6 +282,7 @@
     bottom: 0;
     background-color: #f6f6f6;
     padding: 10px 0;
+    z-index: 1000;
     &--chat{
       background-color: #232323;
       .chat__button{
@@ -276,7 +303,7 @@
     }
   }
   &__input{
-    width: 512px;
+    width: var(--input-width);
     height: 53px;
     position: relative;
     font-size: 14px;
@@ -305,6 +332,7 @@
     top: 50%;
     transform: translateY(-50%);
     left: 538px;
+    background-color: #fff;
   }
   &__unread{
     width: 15px;
@@ -351,6 +379,139 @@
         left: -7px;
         top: 50%;
         transform: translateY(-50%);
+      }
+    }
+  }
+}
+
+@media(max-width: 1233px){
+  .chat{
+    --translation: calc(50vw - 30px);
+  }
+}
+
+@media(max-width: 959px){
+  .chat{
+    --input-width: 100%;
+    &__message{
+      &--last{
+        display: none;
+      }
+    }
+    &__photo{
+      left: -60px;
+      width: 40px;
+      height: 40px;
+    }
+    &__unread{
+      left: -33px;
+      // display: none;
+    }
+    &__button{
+      &--send{
+        left: unset;
+        right: 8px;
+      }
+    }
+    &__wrapper{
+      &--inputs{
+        width: calc(100% - 110px);
+        left: calc(50% + 35px)
+      }
+    }
+    &__inputs{
+      &--chat{
+        .chat__button{
+          left: unset;
+        }
+        .chat__unread{
+          display: flex;
+        }
+        .chat__photo{
+          display: block;
+        }
+        .chat__input{
+          width: 896px;
+        }
+      }
+    }
+  }
+}
+
+@media(max-width: 900px){
+  .chat{
+    &__wrapper{
+      &--products{
+        height: 105px;
+      }
+    }
+    &__products{
+      height: 97px;
+    }
+    &__product{
+      --product-width: 97px;
+      margin: 0 5px;
+      &--attention{
+        &::before{
+          left: 60px;
+        }
+      }
+      &--current{
+        &::after{
+          border-left: 10px solid transparent;
+          border-right: 10px solid transparent;
+          border-top: 8px solid #FF9000;
+          bottom: -8px;
+        }
+      }
+    }
+    &__img{
+      width: 100%;
+      height: 58px;
+    }
+    &__name{
+      left: 5%;
+      top: unset;
+      font-size: 12px;
+      width: 90%;
+      text-align: center;
+    }
+    &__price{
+      left: 5%;
+      top: unset;
+      bottom: 0px;
+      font-size: 12px;
+      width: 90%;
+      text-align: center;
+    }
+  }
+}
+
+@media(max-width: 595px){
+  .chat{
+    &__wrapper{
+      &--messages{
+        width: calc(100vw - 60px);
+      }
+      &--inputs{
+        width: calc(100vw - 70px);
+        left: 50%;
+      }
+    }
+    &__inputs{
+      .chat__unread{
+        display: none;
+      }
+      .chat__photo{
+        display: none;
+      }
+      &--chat{
+        .chat__unread{
+          display: none;
+        }
+        .chat__photo{
+          display: none;
+        }
       }
     }
   }

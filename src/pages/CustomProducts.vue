@@ -48,10 +48,9 @@ export default {
     async getProducts(){
       this.state='loading'
       // let filters = this.uid
-      let filters = '5cd2f8d80abbf'
-      let link = 'https://serviceapi.elitesochi.com/esmain/bromobile/work-products/' + filters
+      let link = 'https://serviceapi.elitesochi.com/esmain/bromobile/work-products/' + this.uid
       let response = await funcs.get(this, link)
-      if(response.status == 200){
+      if(response && response.status == 200){
         this.products = response.data
         this.makeLinks()
         if(this.products.length == 0) this.state = 'empty'
@@ -61,9 +60,8 @@ export default {
       }
     },
     makeLinks(){
-      let str = `?uidn=${this.uid}&product-id=`
       this.products.forEach(p => {
-        p.site_link += str + p.product_id
+        p.site_link += `?tab=product&uid=0&chat-id=${this.uid}&product-id=${p.product_id}`
       })
     },
   },
