@@ -15,16 +15,18 @@
     </div>
     <div v-if="showChat" class="chat__chat">
       <div @click="closeChat()" role="button" tabindex="0" class="chat__button chat__button--close"></div>
-      <div ref="messages" v-if="msgs && msgs.length > 0" class="chat__messages">
+      <div v-show="chatLoading" class="chat__loader chat__loader--chat"></div>
+      <div ref="messages" v-show="!chatLoading" v-if="msgs && msgs.length > 0" class="chat__messages">
         <div v-for="(item, index) in msgs" :key="index" class="chat__wrapper--messages">
           <div class="chat__date">{{ item.date }}</div>
           <div :class="`chat__message--${msg.sender}`" v-for="(msg, i) in item.msgs" :key="i" class="chat__message">
+            <div>{{ msg['message-type'] }}</div>
             <div class="chat__text">
               {{ msg.message }}
+              <img v-if="msg['message-type'] == 'image'" class="chat__preview" :src="msg['file-preview']">
             </div>
             <div class="chat__time">{{ msg.time }}</div>
             <img v-if="msg.sender == 'manager'" :src="currentProduct.photo" class="chat__avatar">
-            <!-- <div class="chat__user-name"></div> -->
           </div>
         </div>
       </div>
@@ -67,6 +69,7 @@ export default {
       chatId: null,
       productId: null,
       moved: false,
+      chatLoading: false,
     };
   },
   computed: {
@@ -103,7 +106,6 @@ export default {
   },
   methods: {
     preventDefault(e){
-      console.log(e)
       e.preventDefault()
     },
     addToLocalStorage(link, id){
@@ -178,10 +180,11 @@ export default {
       }
       let response = await funcs.post(this, link, data)
       if(response.status == 200){
-        this.importedMsgs = response.data.data.reverse()
+        this.importedMsgs = response.data
         await this.makeMessages()
         this.$refs.messages.scrollIntoView(false)
       }
+      // console.table(this.messages)
     },
     async makeMessages(){
       let self = this
@@ -212,10 +215,13 @@ export default {
       }
       this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
     },
-    openChat(){
+    async openChat(){
       this.showChat = true
-      this.getMessages()
-      document.getElementsByTagName('body')[0].style.overflow = 'hidden'
+      this.chatLoading = true
+      await this.getMessages()
+      await (document.getElementsByTagName('body')[0].style.overflow = 'hidden')
+      await (this.chatLoading = false)
+      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
     },
     closeChat(){
       this.showChat = false

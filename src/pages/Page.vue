@@ -1,6 +1,6 @@
 <template>
-  <div class="page">
-    <CChat></CChat>
+  <div class="page" style="pointer-events: none;">
+    <CChat style="pointer-events: all;"></CChat>
   </div>
 </template>
 
