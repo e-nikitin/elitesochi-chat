@@ -18,11 +18,16 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-image: url(./../assets/loader.gif);
     background-repeat: no-repeat;
     background-position: center center;
     width: 100%;
-    height: 100px;
+    height: 100%;
+    &--chat{
+      background-image: url(./../assets/loader.gif);
+    }
+    &--products{
+      background-image: url(./../assets/loader-2.gif);
+    }
   }
   &__messages{
     overflow: auto;

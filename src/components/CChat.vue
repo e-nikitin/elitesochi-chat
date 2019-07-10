@@ -2,7 +2,8 @@
   <div v-if="hasChatId" class="chat">
     <div ref="top" class="chat__top">
       <div ref="productsWrapper" class="chat__wrapper--products">
-        <div ref="products" class="chat__products">
+        <div v-show="productsLoader" class="chat__loader chat__loader--products"></div>
+        <div v-show="!productsLoader" ref="products" class="chat__products">
           <div @mouseup="preventDefault($event)" @click="addToLocalStorage(product.site_link, product.product_id)" :class="productClass(product)" v-for="(product, index) in products" :key="index" class="chat__product">
             <img :src="product.preview_link" class="chat__img">
             <div class="chat__name">{{ product.product_name }}</div>
@@ -70,6 +71,7 @@ export default {
       productId: null,
       moved: false,
       chatLoading: false,
+      productsLoader: false,
     };
   },
   computed: {
@@ -80,6 +82,7 @@ export default {
     },
   },
   async mounted(){
+    this.productsLoader = true
     let self = this
     this.chatId = funcs.getURLParam('chat-id')
     this.productId = funcs.getURLParam('product-id')
@@ -101,7 +104,7 @@ export default {
       let pm = document.querySelector('div.ac-panel')
       if(pm) this.$refs.top.style.top = pm.offsetHeight + 'px'
       window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
-      this.getProducts()
+      await this.getProducts()
     }
   },
   methods: {
@@ -240,6 +243,7 @@ export default {
       let response = await funcs.get(this, link)
       if(response.status == 200){
         this.products = await response.data
+        this.productsLoader = false
         await this.makeLinks()
         this.currentProduct = await this.products.find(p => p.product_id == this.productId)
         await this.$forceUpdate()
