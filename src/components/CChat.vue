@@ -21,11 +21,12 @@
         <div v-for="(item, index) in msgs" :key="index" class="chat__wrapper--messages">
           <div class="chat__date">{{ item.date }}</div>
           <div :class="`chat__message--${msg.sender}`" v-for="(msg, i) in item.msgs" :key="i" class="chat__message">
-            <div>{{ msg['message-type'] }}</div>
             <div class="chat__text">
               {{ msg.message }}
               <img v-if="msg['message-type'] == 'image'" class="chat__preview" :src="msg['file-preview']">
+              <audio controls v-if="msg['message-type'] == 'audio'" :src="msg['file-src']"></audio>
             </div>
+            <div v-if="msg.sender == 'manager'" class="chat__rieltor">{{ currentProduct.first_name }}</div>
             <div class="chat__time">{{ msg.time }}</div>
             <img v-if="msg.sender == 'manager'" :src="currentProduct.photo" class="chat__avatar">
           </div>
@@ -72,6 +73,7 @@ export default {
       moved: false,
       chatLoading: false,
       productsLoader: false,
+      currentPage: 1,
     };
   },
   computed: {
@@ -174,27 +176,33 @@ export default {
         this.openChat()
       }
     },
-    async getMessages(){
+    async getMessages(noScroll){
       let link = 'https://serviceapi.elitesochi.com/esmain/bromobile/get-chat-messages'
       let data = {
         work_id: this.currentProduct.work_id,
         product_id: this.currentProduct.product_id,
-        per_page: 50,
+        per_page: 10,
+        page: this.currentPage,
       }
       let response = await funcs.post(this, link, data)
       if(response.status == 200){
+        this.currentPage++
         this.importedMsgs = response.data
+        let scrollHeight = 0
+        if(this.$refs.messages) scrollHeight = this.$refs.messages.scrollHeight
         await this.makeMessages()
-        this.$refs.messages.scrollIntoView(false)
+        if(noScroll){
+          this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight - scrollHeight
+        }
+        // this.$refs.messages.scrollIntoView(false)
       }
       // console.table(this.messages)
     },
-    async makeMessages(){
+    async makeMessages(noScroll){
       let self = this
       await this.importedMsgs.forEach(await function(m){
-        self.addMessage(self.makeMessage(m))
+        self.addMessage(self.makeMessage(m), noScroll)
       })
-      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
     },
     makeMessage(msg){
       let ru = require('date-fns/locale/ru')
@@ -207,30 +215,45 @@ export default {
       }
       return msg
     },
-    async addMessage(msg){
-      if(this.msgs[this.msgs.length - 1] && this.msgs[this.msgs.length - 1].date == msg.date){
-        await this.msgs[this.msgs.length - 1].msgs.push(msg)
+    async addMessage(msg, noScroll){
+      if(this.msgs.find(m => m.date == msg.date)){
+        await this.msgs.find(m => m.date == msg.date).msgs.unshift(msg)
       } else {
-        await this.msgs.push({
+        await this.msgs.unshift({
           date: msg.date,
           msgs: [msg]
         })
       }
-      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
+      if(!noScroll) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
     },
     async openChat(){
+      let self = this
       this.showChat = true
       this.chatLoading = true
       await this.getMessages()
       await (document.getElementsByTagName('body')[0].style.overflow = 'hidden')
       await (this.chatLoading = false)
-      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
+      await (this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight)
+      this.$refs.messages.addEventListener('scroll', function(){
+        if(self.$refs.messages.scrollTop === 0) self.getMessages(true)
+      })
+      let h = document.getElementById('header')
+      if(h) h.style.filter = 'blur(10px)'
+      let o = document.getElementsByClassName('object-tabset tabset')[0]
+      if(o) o.style.filter = 'blur(10px)'
+      this.$refs.top.style.filter = 'blur(10px)'
     },
     closeChat(){
       this.showChat = false
       this.msgs = []
       this.importedMsgs = []
       document.getElementsByTagName('body')[0].style.overflow = ''
+      this.currentPage = 1
+      let h = document.getElementById('header')
+      if(h) h.style.filter = ''
+      let o = document.getElementsByClassName('object-tabset tabset')[0]
+      if(o) o.style.filter = ''
+      this.$refs.top.style.filter = ''
     },
     productClass(prod){
       let result = ''
