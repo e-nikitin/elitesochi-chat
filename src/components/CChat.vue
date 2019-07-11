@@ -23,8 +23,8 @@
           <div :class="`chat__message--${msg.sender}`" v-for="(msg, i) in item.msgs" :key="i" class="chat__message">
             <div class="chat__text">
               {{ msg.message }}
-              <img v-if="msg['message-type'] == 'image'" class="chat__preview" :src="msg['file-preview']">
-              <audio controls v-if="msg['message-type'] == 'audio'" :src="msg['file-src']"></audio>
+              <img @click="openImage(msg['file-src'])" v-if="msg['message-type'] == 'image'" class="chat__preview" :src="msg['file-preview']">
+              <audio controlsList="nodownload" controls v-if="msg['message-type'] == 'audio'" :src="msg['file-src']"></audio>
             </div>
             <div v-if="msg.sender == 'manager'" class="chat__rieltor">{{ currentProduct.first_name }}</div>
             <div class="chat__time">{{ msg.time }}</div>
@@ -42,6 +42,7 @@
         <div class="chat__message--last">{{ this.currentProduct.last_manager_message }}</div>
       </div>
     </div>
+    <CModalImage ref="image"></CModalImage>
   </div>
 </template>
 
@@ -49,6 +50,7 @@
 import funcs from '@/js/funcs.js'
 import { compareAsc, format } from 'date-fns'
 import VueSocketIO from 'vue-socket.io'
+import CModalImage from '@/components/CModalImage'
 
 // let socket = new WebSocket('wss://www.elitesochi.com:10000/socket.io/?EIO=3&transport=websocket&sid=A_gX7DsPLwZZu-_1AkZb')
 // let socket = new WebSocket('wss://www.elitesochi.com:10000/socket.io/?EIO=3&transport=websocket&sid=A_gX7DsPLwZZu-_1AkZb')
@@ -56,6 +58,9 @@ import VueSocketIO from 'vue-socket.io'
 
 export default {
   name: 'CChat',
+  components: {
+    CModalImage,
+  },
   data() {
     return {
       showChat: false,
@@ -110,6 +115,9 @@ export default {
     }
   },
   methods: {
+    openImage(img){
+      this.$refs.image.open(img)
+    },
     preventDefault(e){
       e.preventDefault()
     },
@@ -229,6 +237,11 @@ export default {
     async openChat(){
       let self = this
       this.showChat = true
+      let h = document.getElementById('header')
+      if(h) h.style.filter = 'blur(10px)'
+      let o = document.getElementsByClassName('object-tabset tabset')[0]
+      if(o) o.style.filter = 'blur(10px)'
+      this.$refs.top.style.filter = 'blur(10px)'
       this.chatLoading = true
       await this.getMessages()
       await (document.getElementsByTagName('body')[0].style.overflow = 'hidden')
@@ -237,11 +250,6 @@ export default {
       this.$refs.messages.addEventListener('scroll', function(){
         if(self.$refs.messages.scrollTop === 0) self.getMessages(true)
       })
-      let h = document.getElementById('header')
-      if(h) h.style.filter = 'blur(10px)'
-      let o = document.getElementsByClassName('object-tabset tabset')[0]
-      if(o) o.style.filter = 'blur(10px)'
-      this.$refs.top.style.filter = 'blur(10px)'
     },
     closeChat(){
       this.showChat = false
@@ -297,12 +305,12 @@ export default {
       this.moved = true
       let left
       if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + e.movementX + 'px'
+        left = parseInt(this.$refs.products.style.left) + e.movementX * 3 + 'px'
       } else {
         left = e.movementX + 'px'
       }
-      if(parseInt(left) > 30) left = `30px`
-      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 30)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 30}px`
+      if(parseInt(left) > 0) left = `0px`
+      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0}px`
       this.$refs.products.style.left = left
       this.$refs.products.style.left
     },
@@ -310,19 +318,19 @@ export default {
       let left
       let w = document.querySelector('.chat__product').offsetWidth - 25
       if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + w + 'px'
+        left = parseInt(this.$refs.products.style.left) + w * 3 + 'px'
       } else {
         left = w + 'px'
       }
-      if(parseInt(left) > 30) left = `30px`
-      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 30)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 30}px`
+      if(parseInt(left) > 0) left = `0px`
+      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0}px`
       this.$refs.products.style.left = left
     },
     buttonRight(){
       let left
       let w = -document.querySelector('.chat__product').offsetWidth + 25
       if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + w + 'px'
+        left = parseInt(this.$refs.products.style.left) + w * 3 + 'px'
       } else {
         left = w + 'px'
       }
