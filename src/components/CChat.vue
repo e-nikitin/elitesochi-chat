@@ -104,7 +104,7 @@ export default {
     this.hasChatId = !!this.chatId
     this.sockets.subscribe('chat message', (data) => {
       data.sender = data.is_me ? 'client' : 'manager'
-      self.addMessage(self.makeMessage(data))
+      self.addMessageReverse(self.makeMessage(data))
     })
     if(this.hasChatId && this.productId) {
       await this.$forceUpdate()
@@ -232,11 +232,23 @@ export default {
           msgs: [msg]
         })
       }
+      if(!noScroll && this.$refs.messages) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
+    },
+    async addMessageReverse(msg, noScroll){
+      if(this.msgs.find(m => m.date == msg.date)){
+        await this.msgs.find(m => m.date == msg.date).msgs.push(msg)
+      } else {
+        await this.msgs.unshift({
+          date: msg.date,
+          msgs: [msg]
+        })
+      }
       if(!noScroll) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
     },
     async openChat(){
       let self = this
       this.showChat = true
+      window.addEventListener('keydown', this.keyClose)
       let h = document.getElementById('header')
       if(h) h.style.filter = 'blur(10px)'
       let o = document.getElementsByClassName('object-tabset tabset')[0]
@@ -246,10 +258,16 @@ export default {
       await this.getMessages()
       await (document.getElementsByTagName('body')[0].style.overflow = 'hidden')
       await (this.chatLoading = false)
-      await (this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight)
-      this.$refs.messages.addEventListener('scroll', function(){
+      if(this.$refs.messages) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
+      if(this.$refs.messages) this.$refs.messages.addEventListener('scroll', function(){
         if(self.$refs.messages.scrollTop === 0) self.getMessages(true)
       })
+    },
+    keyClose(e){
+      if(e.keyCode == 27 || e.key == 'Escape' || e.code == 'Escape'){
+        this.closeChat()
+        window.removeEventListener('keydown', this.keyClose)
+      }
     },
     closeChat(){
       this.showChat = false
