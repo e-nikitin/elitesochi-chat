@@ -304,19 +304,18 @@ export default {
       e.preventDefault()
       this.moved = true
       let left
-      if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + e.movementX * 3 + 'px'
-      } else {
-        left = e.movementX + 'px'
-      }
-      if(parseInt(left) > 0) left = `0px`
-      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0}px`
-      this.$refs.products.style.left = left
-      this.$refs.products.style.left
+      this.moveProducts(e.movementX)
     },
     buttonLeft(){
-      let left
       let w = document.querySelector('.chat__product').offsetWidth - 25
+      this.moveProducts(w)
+    },
+    buttonRight(){
+      let w = -document.querySelector('.chat__product').offsetWidth + 25
+      this.moveProducts(w)
+    },
+    moveProducts(w){
+      let left
       if(parseInt(this.$refs.products.style.left)){
         left = parseInt(this.$refs.products.style.left) + w * 3 + 'px'
       } else {
@@ -324,18 +323,6 @@ export default {
       }
       if(parseInt(left) > 0) left = `0px`
       if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0}px`
-      this.$refs.products.style.left = left
-    },
-    buttonRight(){
-      let left
-      let w = -document.querySelector('.chat__product').offsetWidth + 25
-      if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + w * 3 + 'px'
-      } else {
-        left = w + 'px'
-      }
-      if(parseInt(left) > 30) left = `30px`
-      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 30)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 30}px`
       this.$refs.products.style.left = left
     },
     handleMouseUp(e){
