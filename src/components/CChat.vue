@@ -28,7 +28,7 @@
             </div>
             <div v-if="msg.sender == 'manager'" class="chat__rieltor">{{ currentProduct.first_name }}</div>
             <div class="chat__time">{{ msg.time }}</div>
-            <img v-if="msg.sender == 'manager'" :src="currentProduct.photo" class="chat__avatar">
+            <img v-if="msg.sender == 'manager'" :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__avatar">
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@
       <div class="chat__wrapper--inputs">
         <textarea @keydown.enter="sendMessage($event)" v-model="msg" ref="input" placeholder="Написать" class="chat__input"></textarea>
         <div @click="clickSend()" role="button" ref="send" class="chat__button chat__button--send"></div>
-        <img :src="currentProduct.photo" alt=":)" class="chat__photo">
+        <img :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__photo">
         <div class="chat__unread">{{ this.currentProduct.count_unread_client_messages }}</div>
         <div class="chat__message--last">{{ this.currentProduct.last_manager_message }}</div>
       </div>
