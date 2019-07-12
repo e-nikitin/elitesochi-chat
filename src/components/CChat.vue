@@ -318,6 +318,7 @@ export default {
       this.$refs.products.addEventListener('mousedown', this.handleMouseDown)
     },
     handleMouseDown(e){
+      if(!this.isMoveProducts) return
       e.preventDefault()
       this.$refs.products.style.transition = 'none'
       window.addEventListener('mousemove', this.handleMouseMove)
@@ -346,7 +347,7 @@ export default {
       } else {
         left = w
       }
-      // if(parseInt(left) > 0) left = 0
+      if(parseInt(left) > 0) left = 0
       if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth)) left = this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth
       let product = document.querySelector('.chat__product')
       let productLength = 0
