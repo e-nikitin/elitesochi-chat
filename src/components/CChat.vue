@@ -4,15 +4,15 @@
       <div ref="productsWrapper" class="chat__wrapper--products">
         <div v-show="productsLoader" class="chat__loader chat__loader--products"></div>
         <div v-show="!productsLoader" ref="products" class="chat__products">
-          <div @mouseup="preventDefault($event)" @click="addToLocalStorage(product.site_link, product.product_id)" :class="productClass(product)" v-for="(product, index) in products" :key="index" class="chat__product">
+          <div :ref="`product_${index}`" @mouseup="preventDefault($event)" @click="addToLocalStorage(product.site_link, product.product_id)" :class="productClass(product)" v-for="(product, index) in products" :key="index" class="chat__product">
             <img :src="product.preview_link" class="chat__img">
             <div class="chat__name">{{ product.product_name }}</div>
             <div class="chat__price">{{ price(product.product_price) }}</div>
           </div>
         </div>
       </div>
-      <div @click="buttonLeft()" class="chat__button chat__button--left"></div>
-      <div @click="buttonRight()" class="chat__button chat__button--right"></div>
+      <div v-if="isMoveProducts" @click="buttonLeft()" class="chat__button chat__button--left"></div>
+      <div v-if="isMoveProducts" @click="buttonRight()" class="chat__button chat__button--right"></div>
     </div>
     <div v-if="showChat" class="chat__chat">
       <div @click="closeChat()" role="button" tabindex="0" class="chat__button chat__button--close"></div>
@@ -52,10 +52,6 @@ import { compareAsc, format } from 'date-fns'
 import VueSocketIO from 'vue-socket.io'
 import CModalImage from '@/components/CModalImage'
 
-// let socket = new WebSocket('wss://www.elitesochi.com:10000/socket.io/?EIO=3&transport=websocket&sid=A_gX7DsPLwZZu-_1AkZb')
-// let socket = new WebSocket('wss://www.elitesochi.com:10000/socket.io/?EIO=3&transport=websocket&sid=A_gX7DsPLwZZu-_1AkZb')
-
-
 export default {
   name: 'CChat',
   components: {
@@ -79,6 +75,7 @@ export default {
       chatLoading: false,
       productsLoader: false,
       currentPage: 1,
+      isMoveProducts: false,
     };
   },
   computed: {
@@ -243,7 +240,7 @@ export default {
           msgs: [msg]
         })
       }
-      if(!noScroll) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
+      if(!noScroll && this.$refs.messages) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
     },
     async openChat(){
       let self = this
@@ -305,7 +302,17 @@ export default {
       let productLength = document.querySelector('.chat__product').offsetWidth
       let style = {}
       style.width = `${ this.products.length * productLength }px`
+      if(this.$refs.productsWrapper.offsetWidth < parseInt(style.width)){
+        this.isMoveProducts = true
+        let p = this.products
+        let l = p.length
+        p.push(...p.slice(0, Math.floor(l / 2)))
+        p.unshift(...p.slice(Math.floor(l / 2), l))
+        style.width = `${ this.products.length * productLength }px`
+        style.left = `${ Math.ceil(l / 2) * -productLength }px`
+      }
       Object.keys(style).forEach(k => this.$refs.products.style[k] = style[k])
+
     },
     setMoveProducts(e){
       this.$refs.products.addEventListener('mousedown', this.handleMouseDown)
@@ -335,13 +342,27 @@ export default {
     moveProducts(w){
       let left
       if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + w * 3 + 'px'
+        left = parseInt(this.$refs.products.style.left) + w * 3
       } else {
-        left = w + 'px'
+        left = w
       }
-      if(parseInt(left) > 0) left = `0px`
-      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0)) left = `${this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth - 0}px`
-      this.$refs.products.style.left = left
+      // if(parseInt(left) > 0) left = 0
+      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth)) left = this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth
+      let product = document.querySelector('.chat__product')
+      let productLength = 0
+      if(product) productLength = product.offsetWidth
+      let p = this.products
+      let l = p.length / 2
+      let edgeLeft = 0 - (productLength * Math.ceil(l/2) - parseInt(productLength * 0.75))
+      let edgeRight = 0 - (productLength * Math.ceil(l/2) + parseInt(productLength * 0.75 - this.$refs.productsWrapper.offsetWidth) + productLength * l)
+      if(edgeRight && left < edgeRight){
+        p.push(p.shift())
+        left += productLength
+      } else if(edgeLeft && left > edgeLeft){
+        p.unshift(p.pop())
+        left -= productLength
+      }
+      this.$refs.products.style.left = `${left}px`
     },
     handleMouseUp(e){
       document.body.style.cursor = ''

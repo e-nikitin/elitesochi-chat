@@ -1,4 +1,14 @@
 let funcs = {
+  clone(obj){
+    var newObj = (obj instanceof Array) ? [] : {};
+    for (let i in obj) {
+      if (i == 'clone') continue;
+      if (obj[i] && typeof obj[i] == "object") {
+        newObj[i] = funcs.clone(obj[i]);
+      } else newObj[i] = obj[i]
+    }
+    return newObj;
+  },
   getURLParam(param){
     let search = window.location.search
     let str = param + '='
