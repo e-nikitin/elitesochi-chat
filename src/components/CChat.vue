@@ -4,7 +4,7 @@
       <div ref="productsWrapper" class="chat__wrapper--products">
         <div v-show="productsLoader" class="chat__loader chat__loader--products"></div>
         <div v-show="!productsLoader" ref="products" class="chat__products">
-          <div :ref="`product_${index}`" @mouseup="preventDefault($event)" @click="addToLocalStorage(product.site_link, product.product_id)" :class="productClass(product)" v-for="(product, index) in products" :key="index" class="chat__product">
+          <div :ref="`product_${index}`" @click="addToLocalStorage(product.site_link, product.product_id)" :class="productClass(product)" v-for="(product, index) in products" :key="index" class="chat__product">
             <img :src="product.preview_link" class="chat__img">
             <div class="chat__name">{{ product.product_name }}</div>
             <div class="chat__price">{{ price(product.product_price) }}</div>
@@ -48,6 +48,7 @@
 
 <script>
 import funcs from '@/js/funcs.js'
+import carousel from '@/js/carousel.js'
 import { compareAsc, format } from 'date-fns'
 import VueSocketIO from 'vue-socket.io'
 import CModalImage from '@/components/CModalImage'
@@ -76,6 +77,7 @@ export default {
       productsLoader: false,
       currentPage: 1,
       isMoveProducts: false,
+      adminPanelHeight: 0,
     };
   },
   computed: {
@@ -106,17 +108,24 @@ export default {
     if(this.hasChatId && this.productId) {
       await this.$forceUpdate()
       let pm = document.querySelector('div.ac-panel')
-      if(pm) this.$refs.top.style.top = pm.offsetHeight + 'px'
+      this.adminPanelHeight = pm ? pm.offsetHeight : 0
+      document.getElementById('sochi__chat').style.setProperty('--admin-panel-height', this.adminPanelHeight)
+      if(pm) this.$refs.top.style.top = this.adminPanelHeight + 'px'
       window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
       await this.getProducts()
+      window.addEventListener('scroll', function(){
+        if(pageYOffset > self.$refs.top.offsetHeight + 10){
+          self.$refs.top.style.setProperty('--top', -self.$refs.top.offsetHeight - 10 + 'px')
+        }
+        if(pageYOffset < self.$refs.top.offsetHeight){
+          self.$refs.top.style.setProperty('--top', 0)
+        }
+      })
     }
   },
   methods: {
     openImage(img){
       this.$refs.image.open(img)
-    },
-    preventDefault(e){
-      e.preventDefault()
     },
     addToLocalStorage(link, id){
       if(!this.moved) {
@@ -177,9 +186,7 @@ export default {
       if(this.showChat) return
       let el = funcs.getEventPath(e.target).find(x => Object.is(this.$refs.send, x))
       this.$refs.input.focus()
-      if(!el){
-        this.openChat()
-      }
+      this.openChat()
     },
     async getMessages(noScroll){
       let link = 'https://serviceapi.elitesochi.com/esmain/bromobile/get-chat-messages'
@@ -297,82 +304,90 @@ export default {
         this.setMoveProducts()
       }
     },
-    setProductsStyle(){
-      let self = this
-      let productLength = document.querySelector('.chat__product').offsetWidth
-      let style = {}
-      style.width = `${ this.products.length * productLength }px`
-      if(this.$refs.productsWrapper.offsetWidth < parseInt(style.width)){
-        this.isMoveProducts = true
-        let p = this.products
-        let l = p.length
-        p.push(...p.slice(0, Math.floor(l / 2)))
-        p.unshift(...p.slice(Math.floor(l / 2), l))
-        style.width = `${ this.products.length * productLength }px`
-        style.left = `${ Math.ceil(l / 2) * -productLength }px`
-      }
-      Object.keys(style).forEach(k => this.$refs.products.style[k] = style[k])
 
-    },
+//              ------------------- CAROUSEL ------------------------
+
     setMoveProducts(e){
-      this.$refs.products.addEventListener('mousedown', this.handleMouseDown)
+      let self = this
+      if(document.documentElement.clientWidth > 768)
+        this.$refs.products.addEventListener('mousedown', this.handleMouseDown)
+      else {
+        this.$refs.productsWrapper.addEventListener('scroll', function(e){
+          let delta = 0
+          let wrapper = self.$refs.productsWrapper
+          let wrapperWidth = self.$refs.productsWrapper.offsetWidth
+          let itemsWidth = self.$refs.products.offsetWidth
+          let items = self.products
+          let product = document.querySelector('.chat__product')
+          carousel.moveProducts(delta, wrapper, wrapperWidth, itemsWidth, items, product)
+        })
+      }
+    },
+    async setProductsStyle(){
+      let items = this.products
+      let currentItem = this.currentProduct
+      let itemsEl = this.$refs.products
+      let wrapperEl = this.$refs.productsWrapper
+      let wrapperWidth = this.$refs.productsWrapper.offsetWidth
+      let itemWidth = document.querySelector('.chat__product').offsetWidth
+      this.isMoveProducts = await carousel.setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth)
     },
     handleMouseDown(e){
-      if(!this.isMoveProducts) return
-      e.preventDefault()
-      this.$refs.products.style.transition = 'none'
-      window.addEventListener('mousemove', this.handleMouseMove)
-      window.addEventListener('mouseup', this.handleMouseUp)
-      document.body.style.cursor = 'grab'
-      this.$refs.products.style.cursor = 'grab'
+      if(this.isMoveProducts) {
+        window.addEventListener('mousemove', this.handleMouseMove)
+        window.addEventListener('mouseup', this.handleMouseUp)
+        carousel.handleMouseDown(e, this.$refs.products.style)
+      }
     },
     handleMouseMove(e){
-      e.preventDefault()
-      this.moved = true
-      let left
-      this.moveProducts(e.movementX)
+      let event = e
+      let wrapper = this.$refs.productsWrapper
+      let wrapperWidth = this.$refs.productsWrapper.offsetWidth
+      let itemsWidth = this.$refs.products.offsetWidth
+      let items = this.products
+      let product = document.querySelector('.chat__product')
+      carousel.handleMouseMove(event, wrapper, wrapperWidth, itemsWidth, items, product)
     },
     buttonLeft(){
-      let w = document.querySelector('.chat__product').offsetWidth - 25
-      this.moveProducts(w)
+      let wrapper = this.$refs.productsWrapper
+      let wrapperWidth = this.$refs.productsWrapper.offsetWidth
+      let itemsWidth = this.$refs.products.offsetWidth
+      let items = this.products
+      let product = document.querySelector('.chat__product')
+      let delta = document.querySelector('.chat__product').offsetWidth - 25
+      this.animateButton(delta, wrapper, wrapperWidth, itemsWidth, items, product)
     },
     buttonRight(){
-      let w = -document.querySelector('.chat__product').offsetWidth + 25
-      this.moveProducts(w)
-    },
-    moveProducts(w){
-      let left
-      if(parseInt(this.$refs.products.style.left)){
-        left = parseInt(this.$refs.products.style.left) + w * 3
-      } else {
-        left = w
-      }
-      if(parseInt(left) > 0) left = 0
-      if(parseInt(left) < (this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth)) left = this.$refs.productsWrapper.offsetWidth - this.$refs.products.offsetWidth
+      let wrapper = this.$refs.productsWrapper
+      let wrapperWidth = this.$refs.productsWrapper.offsetWidth
+      let itemsWidth = this.$refs.products.offsetWidth
+      let items = this.products
       let product = document.querySelector('.chat__product')
-      let productLength = 0
-      if(product) productLength = product.offsetWidth
-      let p = this.products
-      let l = p.length / 2
-      let edgeLeft = 0 - (productLength * Math.ceil(l/2) - parseInt(productLength * 0.75))
-      let edgeRight = 0 - (productLength * Math.ceil(l/2) + parseInt(productLength * 0.75 - this.$refs.productsWrapper.offsetWidth) + productLength * l)
-      if(edgeRight && left < edgeRight){
-        p.push(p.shift())
-        left += productLength
-      } else if(edgeLeft && left > edgeLeft){
-        p.unshift(p.pop())
-        left -= productLength
-      }
-      this.$refs.products.style.left = `${left}px`
+      let delta = -document.querySelector('.chat__product').offsetWidth + 25
+      this.animateButton(delta, wrapper, wrapperWidth, itemsWidth, items, product)
+    },
+    animateButton(delta, wrapper, wrapperWidth, itemsWidth, items, product){
+      let fps = 60;
+      let duration = 0.3
+      let now = Date.now()
+      delta = delta / (fps * duration)
+      let timer = setInterval(function() {
+        if ((Date.now() - now) > (duration * 1000)) clearInterval(timer);
+        else {
+          carousel.moveProducts(delta, wrapper, wrapperWidth, itemsWidth, items, product)
+        }
+      }, 1000 / fps)
     },
     handleMouseUp(e){
-      document.body.style.cursor = ''
-      this.$refs.products.style.transition = ''
-      this.$refs.products.style.cursor = ''
-      e.preventDefault()
+      let event = e
+      let itemsStyle = this.$refs.products.style
+      carousel.handleMouseUp(event, itemsStyle)
+
       window.removeEventListener('mouseup', this.handleMouseUp)
       window.removeEventListener('mousemove', this.handleMouseMove)
     },
+
+
     makeLinks(){
       this.products.forEach(p => {
         p.site_link += `?chat-id=${this.chatId}&product-id=${p.product_id}`

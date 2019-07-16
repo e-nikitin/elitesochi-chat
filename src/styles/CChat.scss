@@ -24,6 +24,7 @@
     height: 100%;
     &--chat{
       background-image: url(./../assets/loader.gif);
+      background-position: center bottom 180px ;
     }
     &--products{
       background-image: url(./../assets/loader-2.gif);
@@ -31,8 +32,8 @@
   }
   &__messages{
     overflow: auto;
-    height: calc(100vh - 140px);
-    top: 30px;
+    height: calc(100vh - var(--admin-panel-height, 0) * 1px - 82px);
+    top: calc(var(--admin-panel-height, 0) * 1px);
     width: calc(100vw - 30px);
     position: relative;
     left: 50%;
@@ -172,6 +173,7 @@
     background-color: #fff;
     z-index: 1000;
     box-shadow: 0 0 10px 0px rgba(133, 133, 133, 0.493);
+    transition: top 0.3s linear;
   }
   &__wrapper{
     &--products{
@@ -228,10 +230,14 @@
     }
     &--close{
       background-image: url(./../assets/close.svg);
-      top: 30px;
-      transform: scale(1.5);
+      background-position: center center;
+      top: calc(30px + var(--admin-panel-height, 0) * 1px);
+      background-size: 30px;
+      // transform: scale(1.5);
       right: 20px;
       left: unset;
+      background-color: rgba(0,0,0,0.8);
+      border-radius: 50%;
     }
   }
   &__products{
@@ -532,6 +538,31 @@
   }
 }
 
+@media(max-width: 768px){
+  .chat{
+    &__top{
+      top: var(--top, 0);
+    }
+    &__button{
+      &--left{
+        display: none;
+      }
+      &--right{
+        display: none;
+      }
+      &--close{
+        right: 0px;
+      }
+    }
+    &__wrapper{
+      &--products{
+        width: 100vw;
+        overflow: auto;
+      }
+    }
+  }
+}
+
 @media(max-width: 595px){
   .chat{
     &__wrapper{
@@ -545,17 +576,23 @@
     }
     &__inputs{
       .chat__unread{
-        display: none;
+        // display: none;
+        left: 15px;
       }
       .chat__photo{
-        display: none;
+        left: -10px;
+        // display: none;
+      }
+      .chat__input{
+        width: calc(var(--input-width) - 50px);
+        left: 50px;
       }
       &--chat{
         .chat__unread{
-          display: none;
+          // display: none;
         }
         .chat__photo{
-          display: none;
+          // display: none;
         }
       }
     }
