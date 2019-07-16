@@ -489,15 +489,15 @@
 @media(max-width: 900px){
   .chat{
     &__top{
-      height: 97px;
+      height: 100px;
     }
     &__wrapper{
       &--products{
-        height: 105px;
+        height: 108px;
       }
     }
     &__products{
-      height: 97px;
+      height: 100px;
     }
     &__product{
       --product-width: 97px;
@@ -530,7 +530,7 @@
     &__price{
       left: 5%;
       top: unset;
-      bottom: 0px;
+      bottom: 3px;
       font-size: 12px;
       width: 90%;
       text-align: center;

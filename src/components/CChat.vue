@@ -78,6 +78,7 @@ export default {
       currentPage: 1,
       isMoveProducts: false,
       adminPanelHeight: 0,
+      pageYOffset: 0,
     };
   },
   computed: {
@@ -113,14 +114,25 @@ export default {
       if(pm) this.$refs.top.style.top = this.adminPanelHeight + 'px'
       window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
       await this.getProducts()
-      window.addEventListener('scroll', function(){
-        if(pageYOffset > self.$refs.top.offsetHeight + 10){
+      window.addEventListener('scroll', function(e){
+        if(window.scrollY > self.pageYOffset + 10){
           self.$refs.top.style.setProperty('--top', -self.$refs.top.offsetHeight - 10 + 'px')
+          self.pageYOffset = window.scrollY
         }
-        if(pageYOffset < self.$refs.top.offsetHeight){
+        if(window.scrollY < self.pageYOffset - 10){
           self.$refs.top.style.setProperty('--top', 0)
+          self.pageYOffset = window.scrollY
         }
       })
+      let h = document.getElementById('header')
+      if(h){
+        h.style.position = 'relative'
+        h.style.marginTop = this.$refs.products.offsetHeight + 'px'
+      }
+      let m = document.getElementById('main')
+      if(m) m.style.position = 'relative'
+      let f = document.getElementById('footer')
+      if(f) f.style.position = 'relative'
     }
   },
   methods: {
