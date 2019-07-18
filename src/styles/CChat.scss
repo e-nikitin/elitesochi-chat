@@ -1,13 +1,13 @@
 @import "@/styles/default.scss";
 
 .chat{
-  --chat-width: calc(100vw - 134px);
+  --chat-width: calc(100% - 134px);
   --input-width: 512px;
   --translation: 590px;
   &__chat{
     position: fixed;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.864);
@@ -32,7 +32,7 @@
   }
   &__messages{
     overflow: auto;
-    height: calc(100vh - var(--admin-panel-height, 0) * 1px - 82px);
+    height: calc(100% - var(--admin-panel-height, 0) * 1px - 82px);
     top: calc(var(--admin-panel-height, 0) * 1px);
     width: calc(100vw - 30px);
     position: relative;

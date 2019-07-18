@@ -38,8 +38,8 @@
         <textarea @keydown.enter="sendMessage($event)" v-model="msg" ref="input" placeholder="Написать" class="chat__input"></textarea>
         <div @click="clickSend()" role="button" ref="send" class="chat__button chat__button--send"></div>
         <img :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__photo">
-        <div class="chat__unread">{{ this.currentProduct.count_unread_client_messages }}</div>
-        <div class="chat__message--last">{{ this.currentProduct.last_manager_message }}</div>
+        <div v-if="parseInt(currentProduct.count_unread_client_messages)" class="chat__unread">{{ this.currentProduct.count_unread_client_messages }}</div>
+        <div class="chat__message--last">{{ lastMessage }}</div>
       </div>
     </div>
     <CModalImage ref="image"></CModalImage>
@@ -49,6 +49,7 @@
 <script>
 import funcs from '@/js/funcs.js'
 import carousel from '@/js/carousel.js'
+import chat from '@/js/chat.js'
 import { compareAsc, format } from 'date-fns'
 import VueSocketIO from 'vue-socket.io'
 import CModalImage from '@/components/CModalImage'
@@ -79,6 +80,7 @@ export default {
       isMoveProducts: false,
       adminPanelHeight: 0,
       pageYOffset: 0,
+      maxMessageId: 0,
     };
   },
   computed: {
@@ -86,6 +88,9 @@ export default {
       let result = ''
       if(this.showChat) result += ' chat__inputs--chat'
       return result
+    },
+    lastMessage(){
+      return this.currentProduct.last_message_from == 'manager' ? 'Прочтите сообщение' : 'Задайте вопрос'
     },
   },
   async mounted(){
@@ -102,11 +107,23 @@ export default {
       localStorage.removeItem('productId')
     }
     this.hasChatId = !!this.chatId
-    this.sockets.subscribe('chat message', (data) => {
+    this.sockets.subscribe('chat message', async (data) => {
       data.sender = data.is_me ? 'client' : 'manager'
-      self.addMessageReverse(self.makeMessage(data))
+      await self.addMessageReverse(self.makeMessage(data))
+      if(data['id-product'] == self.currentProduct.product_id){
+        if(self.showChat) await self.setReadMessages()
+        else{
+          if(data.is_me){
+            self.$set(self.currentProduct, 'last_message_from', 'client')
+          } else {
+            self.$set(self.currentProduct, 'last_message_from', 'manager')
+            self.currentProduct.count_unread_client_messages = parseInt(self.currentProduct.count_unread_client_messages) + 1
+          }
+        }
+      }
     })
-    if(this.hasChatId && this.productId) {
+    let condition = window.location.href.includes
+    if(this.hasChatId && this.productId && window.location.href.includes(this.productId)) {
       await this.$forceUpdate()
       let pm = document.querySelector('div.ac-panel')
       this.adminPanelHeight = pm ? pm.offsetHeight : 0
@@ -115,12 +132,12 @@ export default {
       window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
       await this.getProducts()
       window.addEventListener('scroll', function(e){
-        if(window.scrollY > self.pageYOffset + 10){
+        if((window.scrollY < self.$refs.products.offsetHeight + 10 ||
+            window.scrollY < self.pageYOffset - 10)){
+            self.$refs.top.style.setProperty('--top', 0)
+            self.pageYOffset = window.scrollY
+        } else if(window.scrollY > self.pageYOffset + 10){
           self.$refs.top.style.setProperty('--top', -self.$refs.top.offsetHeight - 10 + 'px')
-          self.pageYOffset = window.scrollY
-        }
-        if(window.scrollY < self.pageYOffset - 10){
-          self.$refs.top.style.setProperty('--top', 0)
           self.pageYOffset = window.scrollY
         }
       })
@@ -212,6 +229,7 @@ export default {
       if(response.status == 200){
         this.currentPage++
         this.importedMsgs = response.data
+        this.maxMessageId = Math.max(this.maxMessageId, ...this.importedMsgs.map(m => m.message_id))
         let scrollHeight = 0
         if(this.$refs.messages) scrollHeight = this.$refs.messages.scrollHeight
         await this.makeMessages()
@@ -263,21 +281,9 @@ export default {
     },
     async openChat(){
       let self = this
-      this.showChat = true
-      window.addEventListener('keydown', this.keyClose)
-      let h = document.getElementById('header')
-      if(h) h.style.filter = 'blur(10px)'
-      let o = document.getElementsByClassName('object-tabset tabset')[0]
-      if(o) o.style.filter = 'blur(10px)'
-      this.$refs.top.style.filter = 'blur(10px)'
-      this.chatLoading = true
-      await this.getMessages()
-      await (document.getElementsByTagName('body')[0].style.overflow = 'hidden')
-      await (this.chatLoading = false)
-      if(this.$refs.messages) this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
-      if(this.$refs.messages) this.$refs.messages.addEventListener('scroll', function(){
-        if(self.$refs.messages.scrollTop === 0) self.getMessages(true)
-      })
+      await chat.open(this)
+      await this.setReadMessages()
+      setTimeout(function(){self.getProducts()}, 1500)
     },
     keyClose(e){
       if(e.keyCode == 27 || e.key == 'Escape' || e.code == 'Escape'){
@@ -286,16 +292,13 @@ export default {
       }
     },
     closeChat(){
-      this.showChat = false
-      this.msgs = []
-      this.importedMsgs = []
-      document.getElementsByTagName('body')[0].style.overflow = ''
-      this.currentPage = 1
-      let h = document.getElementById('header')
-      if(h) h.style.filter = ''
-      let o = document.getElementsByClassName('object-tabset tabset')[0]
-      if(o) o.style.filter = ''
-      this.$refs.top.style.filter = ''
+      chat.close(this)
+    },
+    setReadMessages(){
+      let formData = {}
+      formData['work_id'] = this.currentProduct.work_id
+      formData['product_id'] = this.currentProduct.product_id
+      funcs.post(this, 'https://serviceapi.elitesochi.com/esmain/bromobile/set-read-message', formData)
     },
     productClass(prod){
       let result = ''
