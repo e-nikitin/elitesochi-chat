@@ -497,6 +497,9 @@
 }
 
 @media(max-width: 900px){
+  .attention{
+    left: 60px;
+  }
   .chat{
     &__top{
       height: 100px;
@@ -512,11 +515,6 @@
     &__product{
       --product-width: 97px;
       margin: 0 5px;
-      &--attention{
-        &::before{
-          left: 60px;
-        }
-      }
       &--current{
         &::after{
           border-left: 10px solid transparent;
