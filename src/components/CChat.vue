@@ -14,8 +14,8 @@
       </div>
       <div v-if="isMoveProducts" @click="buttonLeft()" class="chat__button chat__button--left"></div>
       <div v-if="isMoveProducts" @click="buttonRight()" class="chat__button chat__button--right"></div>
-      <div v-if="fake" @click="buttonLeft()" class="chat__button chat__button--left"></div>
-      <div v-if="fake" @click="buttonRight()" class="chat__button chat__button--right"></div>
+      <!-- <div v-if="fake" @click="buttonLeft()" class="chat__button chat__button--left"></div>
+      <div v-if="fake" @click="buttonRight()" class="chat__button chat__button--right"></div> -->
     </div>
     <div v-if="showChat" class="chat__chat">
       <div @click="closeChat()" role="button" tabindex="0" class="chat__button chat__button--close"></div>
@@ -90,7 +90,11 @@ export default {
       pageYOffset: 0,
       maxMessageId: 0,
       centerProduct: null,
-      hintSteps: [{
+    };
+  },
+  computed: {
+    hintSteps(){
+      let result =  this.isMoveProducts ? [{
         id: 'current-center-product',
         class: 'chat__product--current',
         text: 'Вы сейчас в этом объекте',
@@ -103,10 +107,19 @@ export default {
       },{
         classes: ['chat__unread','attention--current'],
         text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по дому и их количество',
+      },] : [{
+        id: 'current-center-product',
+        class: 'chat__product--current',
+        text: 'Вы сейчас в этом объекте',
+      },{
+        class: 'chat__wrapper--inputs',
+        text: 'нажмите сюда, чтобы открыть чат с персональным менеджером',
+      },{
+        classes: ['chat__unread','attention--current'],
+        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по дому и их количество',
       },]
-    };
-  },
-  computed: {
+      return result
+    },
     inputsClass(){
       let result = ''
       if(this.showChat) result += ' chat__inputs--chat'

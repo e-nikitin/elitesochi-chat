@@ -78,6 +78,10 @@ export default {
       await (this.showHints = true)
       this.currentElements = this.getEls(this.steps[step])
       this.currentElements = await this.setHints(this.currentElements)
+      if(this.currentElements.length == 0){
+        this.next()
+        return
+      }
       await this.setTextLocation(this.currentElements)
       await this.setArrows(this.currentElements)
     },

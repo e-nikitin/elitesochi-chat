@@ -5,7 +5,8 @@ let funcs = {
       rect.top >= 0 &&
       rect.left >= 0 &&
       rect.bottom <= (window.innerHeight || document. documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document. documentElement.clientWidth)
+      rect.right <= (window.innerWidth || document. documentElement.clientWidth) &&
+      (rect.width > 0 || rect.hight > 0)
     );
   },
   degFromSides(leg, hypotenuse){
