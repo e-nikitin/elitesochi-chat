@@ -1,19 +1,22 @@
 <template>
   <div id="app">
-    <CustomProducts/>
-    <Page/>
+    <!-- <CustomProducts/>
+    <Page/> -->
+    <TestHint/>
   </div>
 </template>
 
 <script>
 import CustomProducts from '@/pages/CustomProducts'
 import Page from '@/pages/Page'
+import TestHint from '@/pages/TestHint'
 
 export default {
   name: 'App',
   components: {
     Page,
     CustomProducts,
+    TestHint,
   }
 }
 </script>

@@ -5,6 +5,7 @@
         <div v-show="productsLoader" class="chat__loader chat__loader--products"></div>
         <div v-show="!productsLoader" ref="products" class="chat__products">
           <div :ref="`product_${index}`" @click="addToLocalStorage(product.site_link, product.product_id)" :class="productClass(product)" v-for="(product, index) in products" :key="index" class="chat__product">
+            <div :class="product.product_id == productId ? 'attention--current' : ''" class="attention"></div>
             <img :src="product.preview_link" class="chat__img">
             <div class="chat__name">{{ product.product_name }}</div>
             <div class="chat__price">{{ price(product.product_price) }}</div>
@@ -13,6 +14,8 @@
       </div>
       <div v-if="isMoveProducts" @click="buttonLeft()" class="chat__button chat__button--left"></div>
       <div v-if="isMoveProducts" @click="buttonRight()" class="chat__button chat__button--right"></div>
+      <div v-if="fake" @click="buttonLeft()" class="chat__button chat__button--left"></div>
+      <div v-if="fake" @click="buttonRight()" class="chat__button chat__button--right"></div>
     </div>
     <div v-if="showChat" class="chat__chat">
       <div @click="closeChat()" role="button" tabindex="0" class="chat__button chat__button--close"></div>
@@ -37,12 +40,14 @@
       <div class="chat__wrapper--inputs">
         <textarea @keydown.enter="sendMessage($event)" v-model="msg" ref="input" placeholder="Написать" class="chat__input"></textarea>
         <div @click="clickSend()" role="button" ref="send" class="chat__button chat__button--send"></div>
-        <img :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__photo">
+        <img id="last-message" :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__photo">
         <div v-if="parseInt(currentProduct.count_unread_client_messages)" class="chat__unread">{{ this.currentProduct.count_unread_client_messages }}</div>
+        <div v-if="fake" class="chat__unread tourhints__fake">4</div>
         <div class="chat__message--last">{{ lastMessage }}</div>
       </div>
     </div>
     <CModalImage ref="image"></CModalImage>
+    <CTourHints @end="educationEnded()" ref="hints" :steps="hintSteps"></CTourHints>
   </div>
 </template>
 
@@ -53,14 +58,17 @@ import chat from '@/js/chat.js'
 import { compareAsc, format } from 'date-fns'
 import VueSocketIO from 'vue-socket.io'
 import CModalImage from '@/components/CModalImage'
+import CTourHints from '@/components/CTourHints'
 
 export default {
   name: 'CChat',
   components: {
     CModalImage,
+    CTourHints,
   },
   data() {
     return {
+      fake: false,
       showChat: false,
       products: [],
       currentProduct: {},
@@ -81,6 +89,21 @@ export default {
       adminPanelHeight: 0,
       pageYOffset: 0,
       maxMessageId: 0,
+      centerProduct: null,
+      hintSteps: [{
+        id: 'current-center-product',
+        class: 'chat__product--current',
+        text: 'Вы сейчас в этом объекте',
+      },{
+        classes: ['chat__button--right', 'chat__button--left'],
+        text: 'Если нажать сюда, то листается список домов',
+      },{
+        class: 'chat__wrapper--inputs',
+        text: 'нажмите сюда, чтобы открыть чат с персональным менеджером',
+      },{
+        classes: ['chat__unread','attention--current'],
+        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по дому и их количество',
+      },]
     };
   },
   computed: {
@@ -151,8 +174,21 @@ export default {
       let f = document.getElementById('footer')
       if(f) f.style.position = 'relative'
     }
+    if(localStorage.getItem('chat_education_ended') != 'true'){
+      self.fake = true
+      setTimeout(function(){self.$refs.hints.run()}, 100)
+    }
+    window.addEventListener('keydown', function(e){
+      if(e.code == "KeyE" && e.shiftKey && e.ctrlKey){
+        localStorage.setItem('chat_education_ended', false)
+      }
+    })
   },
   methods: {
+    educationEnded(){
+      this.fake = false
+      localStorage.setItem('chat_education_ended', true)
+    },
     openImage(img){
       this.$refs.image.open(img)
     },
@@ -302,11 +338,12 @@ export default {
     },
     productClass(prod){
       let result = ''
-      if(parseInt(prod.count_unread_client_messages) > 0) result += " chat__product--attention"
+      if(parseInt(prod.count_unread_client_messages) > 0 || this.fake) result += " chat__product--attention"
       if(prod.product_id == this.currentProduct.product_id) result += " chat__product--current"
       return result
     },
     async getProducts(){
+      let self = this
       let link = `https://serviceapi.elitesochi.com/esmain/bromobile/work-products/${ this.chatId }`
       let response = await funcs.get(this, link)
       if(response.status == 200){
@@ -315,8 +352,8 @@ export default {
         await this.makeLinks()
         this.currentProduct = await this.products.find(p => p.product_id == this.productId)
         await this.$forceUpdate()
-        this.setProductsStyle()
-        this.setMoveProducts()
+        await this.setProductsStyle()
+        await this.setMoveProducts()
       }
     },
 
@@ -339,13 +376,17 @@ export default {
       }
     },
     async setProductsStyle(){
+      let self = this
       let items = this.products
       let currentItem = this.currentProduct
       let itemsEl = this.$refs.products
       let wrapperEl = this.$refs.productsWrapper
       let wrapperWidth = this.$refs.productsWrapper.offsetWidth
-      let itemWidth = document.querySelector('.chat__product').offsetWidth
-      this.isMoveProducts = await carousel.setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth)
+      let itemWidth = null
+      await setTimeout(function(){
+        itemWidth = document.querySelector('.chat__product').offsetWidth
+        self.isMoveProducts = carousel.setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth)
+      }, 50)
     },
     handleMouseDown(e){
       if(this.isMoveProducts) {
@@ -360,6 +401,7 @@ export default {
       let wrapperWidth = this.$refs.productsWrapper.offsetWidth
       let itemsWidth = this.$refs.products.offsetWidth
       let items = this.products
+      console.log()
       let product = document.querySelector('.chat__product')
       carousel.handleMouseMove(event, wrapper, wrapperWidth, itemsWidth, items, product)
     },

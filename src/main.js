@@ -3,6 +3,7 @@
 import Vue from 'vue'
 import CustomProducts from './pages/CustomProducts'
 import Page from './pages/Page'
+import TestHint from './pages/TestHint'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import DragItDude from 'vue-drag-it-dude';
@@ -20,5 +21,5 @@ Vue.component('vue-drag-it-dude', DragItDude)
 /* eslint-disable no-new */
 new Vue({
   el: '#sochi__chat',
-  components: { CustomProducts, Page },
+  components: { CustomProducts, Page, TestHint },
 })

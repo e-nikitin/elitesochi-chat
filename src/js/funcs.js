@@ -1,4 +1,19 @@
 let funcs = {
+  isElementInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document. documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document. documentElement.clientWidth)
+    );
+  },
+  degFromSides(leg, hypotenuse){
+    let sin = leg / hypotenuse
+    if(!Math.asin(sin)) console.log(leg, '  ', hypotenuse, '  ', sin)
+    let result = ((Math.asin(sin)) / Math.PI) * 180
+    return result
+  },
   clone(obj){
     var newObj = (obj instanceof Array) ? [] : {};
     for (let i in obj) {
