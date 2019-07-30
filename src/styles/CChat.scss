@@ -597,10 +597,18 @@
       }
       &--chat{
         .chat__unread{
-          // display: none;
+          display: none;
         }
         .chat__photo{
-          // display: none;
+          display: none;
+        }
+        .chat__input{
+          width: 100%;
+          left: 0vw;
+        }
+        .chat__wrapper--inputs{
+          width: 95vw;
+          left: 50%;
         }
       }
     }

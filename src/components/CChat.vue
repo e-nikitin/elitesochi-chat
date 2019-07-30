@@ -186,6 +186,7 @@ export default {
       if(m) m.style.position = 'relative'
       let f = document.getElementById('footer')
       if(f) f.style.position = 'relative'
+      this.hideSiteElements()
     }
     if(localStorage.getItem('chat_education_ended') != 'true'){
       self.fake = true
@@ -198,6 +199,12 @@ export default {
     })
   },
   methods: {
+    hideSiteElements(){
+      let arr = document.querySelectorAll('a.btn.send')
+      arr.forEach(a => a.style.display = 'none')
+      let blocks = document.getElementsByClassName('content-box subscribe-content')
+      blocks[0].style.display = 'none !important'
+    },
     educationEnded(){
       this.fake = false
       localStorage.setItem('chat_education_ended', true)
