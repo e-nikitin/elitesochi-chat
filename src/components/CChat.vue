@@ -328,7 +328,7 @@ export default {
       if(this.msgs.find(m => m.date == msg.date)){
         await this.msgs.find(m => m.date == msg.date).msgs.push(msg)
       } else {
-        await this.msgs.unshift({
+        await this.msgs.push({
           date: msg.date,
           msgs: [msg]
         })
