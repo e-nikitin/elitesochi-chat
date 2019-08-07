@@ -187,6 +187,7 @@ export default {
       let f = document.getElementById('footer')
       if(f) f.style.position = 'relative'
       this.hideSiteElements()
+      setTimeout((()=> this.hideSiteElements()), 5000)
     }
     if(localStorage.getItem('chat_education_ended') != 'true'){
       self.fake = true
@@ -201,7 +202,7 @@ export default {
   methods: {
     hideSiteElements(){
       let arr = document.querySelectorAll('a.btn.send')
-      // console.log(arr)
+      console.log(arr)
       arr.forEach(a => a.style.display = 'none')
       let blocks = document.getElementsByClassName('content-box subscribe-content')
       if(blocks.length > 0){

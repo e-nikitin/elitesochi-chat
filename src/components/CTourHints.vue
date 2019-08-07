@@ -12,6 +12,7 @@
 
 <script>
 import funcs from '@/js/funcs.js'
+import chat from '@/js/chat.js'
 
 export default {
   name: 'CTourHints',
@@ -50,6 +51,9 @@ export default {
     async run(){
       if(!this.steps.length) return
       this.currentStep = 0
+      chat.setFixedPosition(document.getElementById('site-content'))
+      chat.setOverflow(document.getElementsByTagName('body')[0], 'hidden')
+      chat.setFixedPosition()
       await this.setStep()
     },
     next(){
@@ -58,6 +62,8 @@ export default {
       if(this.currentStep < this.steps.length){
         this.setStep()
       } else {
+        chat.setOverflow(document.getElementsByTagName("body")[0], "");
+        chat.unsetFixedPosition(document.getElementById("site-content"));
         this.$emit('end')
         this.showHints = false
       }
@@ -71,6 +77,8 @@ export default {
     },
     skip(){
       this.dropStep()
+      chat.setOverflow(document.getElementsByTagName("body")[0], "");
+      chat.unsetFixedPosition(document.getElementById("site-content"));
       this.$emit('end')
       this.showHints = false
       this.currentStep = -1
