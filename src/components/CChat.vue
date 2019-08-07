@@ -16,8 +16,6 @@
       <div class="chat__shadow chat__shadow--right"></div>
       <div v-if="isMoveProducts" @click="buttonLeft()" class="chat__button chat__button--left"></div>
       <div v-if="isMoveProducts" @click="buttonRight()" class="chat__button chat__button--right"></div>
-      <!-- <div v-if="fake" @click="buttonLeft()" class="chat__button chat__button--left"></div>
-      <div v-if="fake" @click="buttonRight()" class="chat__button chat__button--right"></div> -->
     </div>
     <div v-if="showChat" class="chat__chat">
       <div @click="closeChat()" role="button" tabindex="0" class="chat__button chat__button--close"></div>
@@ -96,7 +94,7 @@ export default {
   },
   computed: {
     hintSteps(){
-      let result =  this.isMoveProducts ? [{
+      let result = this.isMoveProducts ? [{
         id: 'current-center-product',
         class: 'chat__product--current',
         text: 'Вы сейчас в этом объекте',
@@ -104,7 +102,7 @@ export default {
         classes: ['chat__button--right', 'chat__button--left'],
         text: 'Если нажать сюда, то листается список домов',
       },{
-        class: 'chat__wrapper--inputs',
+        class: 'chat__inputs',
         text: 'нажмите сюда, чтобы открыть чат с персональным менеджером',
       },{
         classes: ['chat__unread','attention--current'],
@@ -114,7 +112,7 @@ export default {
         class: 'chat__product--current',
         text: 'Вы сейчас в этом объекте',
       },{
-        class: 'chat__wrapper--inputs',
+        class: 'chat__inputs',
         text: 'нажмите сюда, чтобы открыть чат с персональным менеджером',
       },{
         classes: ['chat__unread','attention--current'],
@@ -203,11 +201,14 @@ export default {
   methods: {
     hideSiteElements(){
       let arr = document.querySelectorAll('a.btn.send')
+      // console.log(arr)
       arr.forEach(a => a.style.display = 'none')
       let blocks = document.getElementsByClassName('content-box subscribe-content')
-      blocks[0].style.width = '0'
-      blocks[0].style.height = '0'
-      blocks[0].style.padding = '0'
+      if(blocks.length > 0){
+        blocks[0].style.width = '0'
+        blocks[0].style.height = '0'
+        blocks[0].style.padding = '0'
+      }
     },
     educationEnded(){
       this.fake = false

@@ -2,11 +2,11 @@
   <div ref="main" v-if="showHints" class="tourhints">
     <div class="tourhints__bg"></div>
     <div ref="text" class="tourhints__text">{{ text }}
-      <div v-if="showNext" @click="next()" role="button" tabindex="0" class="tourhints__button tourhints__button--next">Далее</div>
+      <div v-if="showNext" @click="next()" role="button" tabindex="0" class="tourhints__button tourhints__button--next">{{ nextButtonName }}</div>
       <div v-if="showPrev" @click="prev()" role="button" tabindex="0" class="tourhints__button tourhints__button--prev">Назад</div>
     </div>
     <div v-for="(arrow, index) in arrowsParams" :key="index" :style="arrowStyle(arrow)" :class="arrowClass(arrow)" class="tourhints__arrow"></div>
-    <div v-if="showSkip" @click="skip()" role="button" tabindex="0" class="tourhints__button tourhints__button--skip">Закончить обучение</div>
+    <div v-if="showSkip" @click="skip()" role="button" tabindex="0" class="tourhints__button tourhints__button--skip"></div>
   </div>
 </template>
 
@@ -33,8 +33,11 @@ export default {
     text(){
       return this.steps[this.currentStep] && this.steps[this.currentStep].text ? this.steps[this.currentStep].text : ''
     },
+    nextButtonName(){
+      return this.currentStep < this.steps.length - 1 ? 'Далее' : 'Закончить'
+    },
     showNext(){
-      return this.currentStep < this.steps.length
+      return true
     },
     showPrev(){
       return this.currentStep > 0
