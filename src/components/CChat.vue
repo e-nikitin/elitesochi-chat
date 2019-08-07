@@ -12,6 +12,8 @@
           </div>
         </div>
       </div>
+      <div class="chat__shadow chat__shadow--left"></div>
+      <div class="chat__shadow chat__shadow--right"></div>
       <div v-if="isMoveProducts" @click="buttonLeft()" class="chat__button chat__button--left"></div>
       <div v-if="isMoveProducts" @click="buttonRight()" class="chat__button chat__button--right"></div>
       <!-- <div v-if="fake" @click="buttonLeft()" class="chat__button chat__button--left"></div>
@@ -203,7 +205,9 @@ export default {
       let arr = document.querySelectorAll('a.btn.send')
       arr.forEach(a => a.style.display = 'none')
       let blocks = document.getElementsByClassName('content-box subscribe-content')
-      blocks[0].style.display = 'none !important'
+      blocks[0].style.width = '0'
+      blocks[0].style.height = '0'
+      blocks[0].style.padding = '0'
     },
     educationEnded(){
       this.fake = false

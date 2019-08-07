@@ -15,7 +15,7 @@
   background-position: center;
 }
 .chat{
-  --chat-width: calc(100% - 134px);
+  --chat-width: calc(100vw - 134px);
   --input-width: 512px;
   --translation: 590px;
   &__chat{
@@ -189,6 +189,25 @@
     box-shadow: 0 0 10px 0px rgba(133, 133, 133, 0.493);
     transition: top 0.3s linear;
   }
+  &__shadow{
+    width: 100%;
+    height: calc(100%);
+    z-index: 2;
+    user-select: none;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: calc(100%);
+    max-width: calc((100% - 1104px) / 2);
+    &--left{
+      left: 0;
+      box-shadow: 7px 0px 20px 0px rgba(133, 133, 133, 0.767);
+    }
+    &--right{
+      right: 0;
+      box-shadow: -7px 0px 20px 0px rgba(155, 149, 149, 0.767);
+    }
+  }
   &__wrapper{
     &--products{
       width: var(--chat-width);
@@ -199,7 +218,6 @@
       position: relative;
       top: 0;
       overflow: hidden;
-      box-shadow: 0px -19px 11px 8px rgba(133, 133, 133, 0.82);
     }
     &--inputs{
       position: relative;
@@ -278,7 +296,14 @@
     position: relative;
     cursor: pointer;
     &--current{
-      border: 3px solid #ff9000;
+      box-shadow: inset 0 0 0 3px #ff9000;
+      .chat__img{
+        width: 59px;
+        height: calc(100% - 6px);
+        top: 3px;
+        left: 3px;
+        position: relative;
+      }
       &:after{
         content: '';
         display: block;
@@ -321,11 +346,11 @@
   }
   &__price{
     color: var(--color);
-    font-weight: 600;
+    font-weight: 400;
     line-height: 19px;
     position: absolute;
     left: 75px;
-    font-size: 11px;
+    font-size: 14px;
     top: 29px;
   }
   &__inputs{
@@ -445,6 +470,10 @@
 @media(max-width: 1233px){
   .chat{
     --translation: calc(50vw - 30px);
+    &__shadow{
+      max-width: unset;
+      width: 67px;
+    }
   }
 }
 
@@ -513,10 +542,14 @@
       --product-width: 97px;
       margin: 0 5px;
       &--current{
+        .chat__img{
+          height: 55px;
+          width: calc(100% - 6px);
+        }
         &::after{
           border-left: 10px solid transparent;
           border-right: 10px solid transparent;
-          border-top: 8px solid #FF9000;
+          // border-top: 8px solid #FF9000;
           bottom: -8px;
         }
       }
@@ -527,7 +560,7 @@
     }
     &__name{
       left: 5%;
-      top: unset;
+      top: 60px;
       font-size: 12px;
       width: 90%;
       text-align: center;
@@ -564,6 +597,9 @@
         width: 100vw;
         overflow: auto;
       }
+    }
+    &__shadow{
+      width: 0;
     }
   }
 }
