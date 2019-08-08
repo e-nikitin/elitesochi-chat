@@ -100,23 +100,23 @@ export default {
         text: 'Вы сейчас в этом объекте',
       },{
         classes: ['chat__button--right', 'chat__button--left'],
-        text: 'Если нажать сюда, то листается список домов',
+        text: 'Тут листайте список обьектов',
       },{
         class: 'chat__inputs',
-        text: 'нажмите сюда, чтобы открыть чат с персональным менеджером',
+        text: 'Если у Вас появились вопросы, наишите их в чат',
       },{
         classes: ['chat__unread','attention--current'],
-        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по дому и их количество',
+        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по объекту и их количество',
       },] : [{
         id: 'current-center-product',
         class: 'chat__product--current',
         text: 'Вы сейчас в этом объекте',
       },{
         class: 'chat__inputs',
-        text: 'нажмите сюда, чтобы открыть чат с персональным менеджером',
+        text: 'Если у Вас появились вопросы, наишите их в чат',
       },{
         classes: ['chat__unread','attention--current'],
-        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по дому и их количество',
+        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по объекту и их количество',
       },]
       return result
     },
@@ -187,7 +187,7 @@ export default {
       let f = document.getElementById('footer')
       if(f) f.style.position = 'relative'
       this.hideSiteElements()
-      setTimeout((()=> this.hideSiteElements()), 5000)
+      setTimeout((()=> this.hideSiteElements()), 3000)
     }
     if(localStorage.getItem('chat_education_ended') != 'true'){
       self.fake = true
