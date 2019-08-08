@@ -1,5 +1,5 @@
 <template>
-  <a v-if="product" @click="addToLocalStorage()" :href="product.site_link" target="_blank" class="product">
+  <a v-if="product" @click="addToLocalStorage()" :href="product.site_link" class="product">
     <img :src="product.preview_link" alt="Не удалось загрузить изображение" class="product__img">
     <span v-for="(attr, index) in product.attr_blocks" :style="{ color: attr.color, 'background-color': attr.bg_color }" :key="index" class="product__attr">{{ attr.name }}</span>
     <div class="product__title">{{ product.product_name }}</div>
