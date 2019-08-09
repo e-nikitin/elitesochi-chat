@@ -126,7 +126,7 @@ export default {
       return result
     },
     lastMessage(){
-      return this.currentProduct.last_message_from == 'manager' ? 'Прочтите сообщение' : 'Задайте вопрос'
+      return this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
     },
   },
   async mounted(){
@@ -361,6 +361,7 @@ export default {
       formData['work_id'] = this.currentProduct.work_id
       formData['product_id'] = this.currentProduct.product_id
       funcs.post(this, 'https://serviceapi.elitesochi.com/esmain/bromobile/set-read-message', formData)
+      this.$socket.emit('chat read', '1')
     },
     productClass(prod){
       let result = ''

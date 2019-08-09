@@ -1,6 +1,7 @@
 const carousel = {
   moved: false,
   setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth){
+
     let isMove = false
     let width = 0
     let l = items.length
@@ -10,6 +11,10 @@ const carousel = {
       items.push(...items.slice(0, Math.floor(l / 2)))
       items.unshift(...items.slice(Math.floor(l / 2), l))
       width = `${ items.length * itemWidth }px`
+
+      wrapperEl.children[1].style.transform = 'none'
+      wrapperEl.children[1].style.left = '0'
+
     }
     let currentIndex = Math.floor(l / 2) + items.slice(Math.floor(l / 2), l + Math.floor(l / 2)).findIndex(x => x.product_id == currentItem.product_id)
     let productsWrapper = wrapperWidth
