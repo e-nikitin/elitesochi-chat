@@ -28,6 +28,7 @@ export default {
       showHints: false,
       currentStep: 0,
       arrowsParams: [],
+      showElements: [],
     };
   },
   computed:{
@@ -87,6 +88,8 @@ export default {
       step = step ? step : this.currentStep
       this.currentStep = step
       await (this.showHints = true)
+      this.showElements = this.getShowEls(this.steps[step])
+      this.showElements = await this.setShowHints(this.showElements)
       this.currentElements = this.getEls(this.steps[step])
       this.currentElements = await this.setHints(this.currentElements)
       if(this.currentElements.length == 0){
@@ -98,6 +101,7 @@ export default {
     },
     dropStep(){
       this.currentElements.forEach(el => el.parentNode.removeChild(el))
+      this.showElements.forEach(el => el.parentNode.removeChild(el))
       this.arrowsParams = []
       this.$refs.text.style.left = ''
       this.$refs.text.style.top = ''
@@ -123,6 +127,23 @@ export default {
       let el = elNative.cloneNode(true)
       let dataset = Object.keys(this.$refs.main.dataset)
       el.classList.add('tourhints__el')
+      el.style.setProperty('--width', elNative.getBoundingClientRect().width + 'px')
+      el.style.setProperty('--height', elNative.getBoundingClientRect().height + 'px')
+      el.style.top = `${elNative.getBoundingClientRect().top}px`
+      el.style.left = `${elNative.getBoundingClientRect().left}px`
+      dataset.forEach(d => el.dataset[d] = '')
+      this.$refs.main.appendChild(el)
+      return el
+    },
+    setShowHints(els){
+      let self = this
+      return els.map(el => this.setShowHint(el))
+    },
+    setShowHint(elNative){
+      if(!elNative) return
+      let el = elNative.cloneNode(true)
+      let dataset = Object.keys(this.$refs.main.dataset)
+      el.classList.add('tourhints__el', 'tourhints__el--show')
       el.style.setProperty('--width', elNative.getBoundingClientRect().width + 'px')
       el.style.setProperty('--height', elNative.getBoundingClientRect().height + 'px')
       el.style.top = `${elNative.getBoundingClientRect().top}px`
@@ -175,6 +196,54 @@ export default {
         step.els.forEach(_el => {
           if(_el && funcs.isElementInViewport(el)) result.push(_el)
           else console.error('CTourHint: can not find element in viewport in els el = ', _el)
+        })
+      }
+      return result
+    },
+    getShowEls(step){
+      let result = []
+      let el = null
+      let classes = []
+      if(step.classShow) {
+        let i = 0
+        classes = document.getElementsByClassName(step.classShow)
+        do{
+          el = classes[i]
+          i++
+        } while ((!el || !funcs.isElementInViewport(el)) && i < classes.length)
+        if(el && funcs.isElementInViewport(el)) result.push(el)
+        else console.error(`CTourHint: can not find element in viewport (classShow = ${step.class})`)
+      }
+      if(step.classesShow && step.classesShow.length > 0){
+        step.classesShow.forEach(_class => {
+          classesShow = document.getElementsByClassName(_class)
+          let i = 0
+          do{
+            el = classesShow[i]
+            i++
+          } while ((!el || !funcs.isElementInViewport(el)) && i < classesShow.length)
+          if(el && funcs.isElementInViewport(el)) result.push(el)
+          else console.error(`CTourHint: can not find element in viewport (in classesShow class = ${_class})`)
+        })
+      }
+      if(step.idShow) {
+        el = document.getElementById(step.idShow)
+        if(el && funcs.isElementInViewport(el)) result.push(el)
+        else console.error(`CTourHint: can not find element in viewport (idShow = ${step.idShow})`)
+      }
+      if(step.idsShow && step.idsShow.length > 0){
+        step.idsShow.forEach(id => {
+          el = document.getElementById(id)
+          if(el && funcs.isElementInViewport(el)) result.push(el)
+          else console.error(`CTourHint: can not find element in viewport (in idsShow id = ${id})`)
+        })
+      }
+      if(step.elShow && funcs.isElementInViewport(step.elShow)) result.push(step.elShow)
+      else console.error('CTourHint: can not find element in viewport elShow = ', step.elShow)
+      if(step.elsShow && step.elsShow.length > 0){
+        step.elsShow.forEach(_el => {
+          if(_el && funcs.isElementInViewport(el)) result.push(_el)
+          else console.error('CTourHint: can not find element in viewport in elsShow el = ', _el)
         })
       }
       return result

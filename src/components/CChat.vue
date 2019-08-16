@@ -38,13 +38,16 @@
     </div>
     <div @click="clickInputs($event)" class="chat__inputs" :class="inputsClass">
       <div class="chat__wrapper--inputs">
-        <textarea @keydown.enter="sendMessage($event)" v-model="msg" ref="input" placeholder="Написать" class="chat__input"></textarea>
+        <textarea @keydown.enter="sendMessage($event)" v-model="msg" ref="input" :placeholder="chatMessagePlaceholder" class="chat__input"></textarea>
         <div @click="clickSend()" role="button" ref="send" class="chat__button chat__button--send"></div>
         <img id="last-message" :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__photo">
         <div v-if="parseInt(currentProduct.count_unread_client_messages)" class="chat__unread">{{ this.currentProduct.count_unread_client_messages }}</div>
         <div v-if="fake" class="chat__unread tourhints__fake">4</div>
         <div class="chat__message--last">{{ lastMessage }}</div>
       </div>
+    </div>
+    <div ref="fake" v-if="fake">
+
     </div>
     <CModalImage ref="image"></CModalImage>
     <CTourHints @end="educationEnded()" ref="hints" :steps="hintSteps"></CTourHints>
@@ -68,7 +71,7 @@ export default {
   },
   data() {
     return {
-      fake: false,
+      fake: true,
       showChat: false,
       products: [],
       currentProduct: {},
@@ -94,30 +97,29 @@ export default {
   },
   computed: {
     hintSteps(){
-      let result = this.isMoveProducts ? [{
+      let result = []
+      result.push({
         id: 'current-center-product',
         class: 'chat__product--current',
         text: 'Вы сейчас в этом объекте',
-      },{
+      })
+      if(this.isMoveProducts) result.push({
         classes: ['chat__button--right', 'chat__button--left'],
         text: 'Тут листайте список обьектов',
-      },{
+      })
+      result.push({
         class: 'chat__inputs',
-        text: 'Если у Вас появились вопросы, наишите их в чат',
-      },{
+        text: 'Если у Вас появились вопросы, напишите их в чат',
+      })
+      result.push({
         classes: ['chat__unread','attention--current'],
         text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по объекту и их количество',
-      },] : [{
-        id: 'current-center-product',
-        class: 'chat__product--current',
-        text: 'Вы сейчас в этом объекте',
-      },{
-        class: 'chat__inputs',
-        text: 'Если у Вас появились вопросы, наишите их в чат',
-      },{
-        classes: ['chat__unread','attention--current'],
-        text: 'Эти элементы показывают, что у вас есть непрочитанные сообщения по объекту и их количество',
-      },]
+      })
+      if(this.isNewBuildingPage()) result.push({
+        class: 'education-tab',
+        classShow: 'education-tabs',
+        text: 'Пролистайте страницу вниз и нажмите здесь, чтобы посмотреть цены и планировки квартир в этом доме',
+      })
       return result
     },
     inputsClass(){
@@ -128,6 +130,14 @@ export default {
     lastMessage(){
       return this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
     },
+    chatMessagePlaceholder(){
+      let screenWidth = document.body.offsetWidth
+      if(screenWidth < 956){
+        return this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
+      } else {
+        return 'Задайте вопрос'
+      }
+    }
   },
   async mounted(){
     this.productsLoader = true
@@ -191,8 +201,9 @@ export default {
     }
     if(localStorage.getItem('chat_education_ended') != 'true'){
       self.fake = true
+      this.setFakeElementsForEducation()
       setTimeout(function(){self.$refs.hints.run()}, 100)
-    }
+    } else self.fake = false
     window.addEventListener('keydown', function(e){
       if(e.code == "KeyE" && e.shiftKey && e.ctrlKey){
         localStorage.setItem('chat_education_ended', false)
@@ -200,9 +211,49 @@ export default {
     })
   },
   methods: {
+    setFakeElementsForEducation(){
+      let el = this.getNeededFakeElement()
+      if(el) this.addNeededFakeElement(el)
+    },
+    getNeededFakeElement(){
+      let fakeClass = "fake-for-education"
+      let tabs = document.getElementsByClassName('tab-control-head')[0]
+      tabs = tabs ? tabs.cloneNode(true) : null
+      if(tabs){
+        let wrapper = document.createElement('div')
+        wrapper.classList.add('object-tabset', 'tabset', 'education-tabs')
+        wrapper.appendChild(tabs)
+        let tab = Object.values(wrapper.firstChild.children[0].children).find(ch => ch.classList && ch.classList.contains('tab_productTables'))
+        let originalTab = Object.values(wrapper.firstChild.children[0].children).find(ch => ch.classList && ch.classList.contains('tab_productTables'))
+        tab.classList.add('education-tab')
+        this.copyNodeStyle(originalTab, tab)
+        tab.style.fontSize = '0'
+        this.copyNodeStyle(originalTab.firstChild, tab.firstChild)
+        wrapper.style.paddingTop = '15px'
+        return wrapper
+      }
+      return null
+    },
+    copyNodeStyle(sourceNode, targetNode) {
+      var computedStyle = window.getComputedStyle(sourceNode);
+      Array.from(computedStyle).forEach(function (key) {
+        if(isNaN(parseInt(key))) targetNode.style.setProperty(key, computedStyle.getPropertyValue(key), computedStyle.getPropertyPriority(key));
+      });
+    },
+    addNeededFakeElement(element){
+      element.style.backgroundColor = 'white'
+      element.style.position = 'fixed'
+      element.style.bottom = '0'
+      element.style.width = '100vw'
+      this.$refs.fake.appendChild(element)
+    },
+    isNewBuildingPage(){
+      let link = document.URL || window.location.href
+      if(!link || link.indexOf('catalog/novostroyki/object/') == -1) return false
+      else return true
+    },
     hideSiteElements(){
       let arr = document.querySelectorAll('a.btn.send')
-      console.log(arr)
       arr.forEach(a => a.style.display = 'none')
       let blocks = document.getElementsByClassName('content-box subscribe-content')
       if(blocks.length > 0){
@@ -361,7 +412,7 @@ export default {
       formData['work_id'] = this.currentProduct.work_id
       formData['product_id'] = this.currentProduct.product_id
       funcs.post(this, 'https://serviceapi.elitesochi.com/esmain/bromobile/set-read-message', formData)
-      this.$socket.emit('chat read', '1')
+      this.$socket.emit('chat read', {product_id: this.currentProduct.product_id})
     },
     productClass(prod){
       let result = ''
@@ -428,7 +479,6 @@ export default {
       let wrapperWidth = this.$refs.productsWrapper.offsetWidth
       let itemsWidth = this.$refs.products.offsetWidth
       let items = this.products
-      console.log()
       let product = document.querySelector('.chat__product')
       carousel.handleMouseMove(event, wrapper, wrapperWidth, itemsWidth, items, product)
     },
