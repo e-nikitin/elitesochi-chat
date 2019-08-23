@@ -45,7 +45,7 @@ export default {
       return this.currentStep > 0
     },
     showSkip(){
-      return true
+      return false
     }
   },
   methods: {
@@ -131,6 +131,7 @@ export default {
       el.style.setProperty('--height', elNative.getBoundingClientRect().height + 'px')
       el.style.top = `${elNative.getBoundingClientRect().top}px`
       el.style.left = `${elNative.getBoundingClientRect().left}px`
+      el.style.pointerEvents = 'none'
       dataset.forEach(d => el.dataset[d] = '')
       this.$refs.main.appendChild(el)
       return el
