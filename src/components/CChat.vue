@@ -217,15 +217,16 @@ export default {
       if(this.productId && window.location.href.includes(this.productId)){
         this.varShowInputs = true
         window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
-      }
         this.hideSiteElements()
         setTimeout((()=> this.hideSiteElements()), 3000)
+      }
     },
     setChatTop(){
       this.makeTopHideOnMobile()
       this.moveSiteDown()
     },
     makeTopHideOnMobile(){
+      let self = this
       window.addEventListener('scroll', function(e){
         if((window.scrollY < self.$refs.products.offsetHeight + 10 ||
             window.scrollY < self.pageYOffset - 10)){
