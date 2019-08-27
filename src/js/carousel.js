@@ -15,12 +15,14 @@ const carousel = {
       wrapperEl.children[1].style.transform = 'none'
       wrapperEl.children[1].style.left = '0'
 
+      itemsEl.style.width = width
     }
-    let currentIndex = Math.floor(l / 2) + items.slice(Math.floor(l / 2), l + Math.floor(l / 2)).findIndex(x => x.product_id == currentItem.product_id)
-    let productsWrapper = wrapperWidth
-    let left = productsWrapper / 2 - (currentIndex +  0.5) * itemWidth
-    itemsEl.style.width = width
-    wrapperEl.scrollLeft = -left
+    if(currentItem){
+      let currentIndex = Math.floor(l / 2) + items.slice(Math.floor(l / 2), l + Math.floor(l / 2)).findIndex(x => x.product_id == currentItem.product_id)
+      let productsWrapper = wrapperWidth
+      let left = productsWrapper / 2 - (currentIndex +  0.5) * itemWidth
+      wrapperEl.scrollLeft = -left
+    }
     return isMove
   },
 

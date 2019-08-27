@@ -1,6 +1,6 @@
 <template>
-  <div v-if="hasChatId" class="chat">
-    <div ref="top" class="chat__top">
+  <div v-if="showAll" class="chat">
+    <div v-if="showTop" ref="top" class="chat__top">
       <div ref="productsWrapper" class="chat__wrapper--products">
         <div v-show="productsLoader" class="chat__loader chat__loader--products"></div>
         <div v-show="!productsLoader" ref="products" class="chat__products">
@@ -31,17 +31,17 @@
             </div>
             <div v-if="msg.sender == 'manager'" class="chat__rieltor">{{ currentProduct.first_name }}</div>
             <div class="chat__time">{{ msg.time }}</div>
-            <img v-if="msg.sender == 'manager'" :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__avatar">
+            <img v-if="msg.sender == 'manager'" :src="rieltorPhoto" class="chat__avatar">
           </div>
         </div>
       </div>
     </div>
-    <div @click="clickInputs($event)" class="chat__inputs" :class="inputsClass">
+    <div v-if="showInputs" @click="clickInputs($event)" class="chat__inputs" :class="inputsClass">
       <div class="chat__wrapper--inputs">
         <textarea @keydown.enter="sendMessage($event)" v-model="msg" ref="input" :placeholder="chatMessagePlaceholder" class="chat__input"></textarea>
         <div @click="clickSend()" role="button" ref="send" class="chat__button chat__button--send"></div>
-        <img id="last-message" :src="currentProduct.photo || require('./../assets/avatar.png')" class="chat__photo">
-        <div v-if="parseInt(currentProduct.count_unread_client_messages)" class="chat__unread">{{ this.currentProduct.count_unread_client_messages }}</div>
+        <img id="last-message" :src="rieltorPhoto" class="chat__photo">
+        <div v-if="currentProduct && parseInt(currentProduct.count_unread_client_messages)" class="chat__unread">{{ this.currentProduct ? this.currentProduct.count_unread_client_messages : '' }}</div>
         <div v-if="fake" class="chat__unread tourhints__fake">4</div>
         <div class="chat__message--last">{{ lastMessage }}</div>
       </div>
@@ -71,7 +71,9 @@ export default {
   },
   data() {
     return {
-      fake: true,
+      varShowInputs: false,
+      showMain: true,
+      fake: false,
       showChat: false,
       products: [],
       currentProduct: {},
@@ -96,6 +98,18 @@ export default {
     };
   },
   computed: {
+    rieltorPhoto(){
+      return (this.currentProduct ? this.currentProduct.photo : null) || require('./../assets/avatar.png')
+    },
+    showAll(){
+      return this.hasChatId && this.showMain
+    },
+    showTop(){
+      return true
+    },
+    showInputs(){
+      return this.varShowInputs
+    },
     hintSteps(){
       let result = []
       result.push({
@@ -128,12 +142,12 @@ export default {
       return result
     },
     lastMessage(){
-      return this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
+      return this.currentProduct && this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
     },
     chatMessagePlaceholder(){
       let screenWidth = document.body.offsetWidth
       if(screenWidth < 956){
-        return this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
+        return this.currentProduct && this.currentProduct.count_unread_client_messages == 0 ? 'Задайте вопрос' : 'Прочтите сообщение'
       } else {
         return 'Задайте вопрос'
       }
@@ -142,41 +156,76 @@ export default {
   async mounted(){
     this.productsLoader = true
     let self = this
-    this.chatId = funcs.getURLParam('chat-id')
-    this.productId = funcs.getURLParam('product-id')
-    if(!this.chatId) {
-      this.chatId = localStorage['chatId']
-      localStorage.removeItem('chatId')
-    }
-    if(!this.productId) {
-      this.productId = localStorage['productId']
-      localStorage.removeItem('productId')
-    }
-    this.hasChatId = !!this.chatId
-    this.sockets.subscribe('chat message', async (data) => {
-      data.sender = data.is_me ? 'client' : 'manager'
-      await self.addMessageReverse(self.makeMessage(data))
-      if(data['id-product'] == self.currentProduct.product_id){
-        if(self.showChat) await self.setReadMessages()
-        else{
-          if(data.is_me){
-            self.$set(self.currentProduct, 'last_message_from', 'client')
-          } else {
-            self.$set(self.currentProduct, 'last_message_from', 'manager')
-            self.currentProduct.count_unread_client_messages = parseInt(self.currentProduct.count_unread_client_messages) + 1
+    this.subscribeChatMessage()
+    this.setChat()
+    this.setEducation()
+  },
+  methods: {
+    setEducation(){
+      if(localStorage.getItem('chat_education_ended') != 'true'){
+        self.fake = true
+        this.setFakeElementsForEducation()
+        setTimeout(function(){self.$refs.hints.run()}, 100)
+      } else self.fake = false
+      window.addEventListener('keydown', function(e){
+        if(e.code == "KeyE" && e.shiftKey && e.ctrlKey){
+          localStorage.setItem('chat_education_ended', false)
+        }
+      })
+    },
+    subscribeChatMessage(){
+      let self = this
+      this.sockets.subscribe('chat message', async (data) => {
+        data.sender = data.is_me ? 'client' : 'manager'
+        await self.addMessageReverse(self.makeMessage(data))
+        if(data['id-product'] == self.currentProduct.product_id){
+          if(self.showChat) await self.setReadMessages()
+          else{
+            if(data.is_me){
+              self.$set(self.currentProduct, 'last_message_from', 'client')
+            } else {
+              self.$set(self.currentProduct, 'last_message_from', 'manager')
+              if(self.currentProduct) self.currentProduct.count_unread_client_messages = parseInt(self.currentProduct.count_unread_client_messages) + 1
+            }
           }
         }
+      })
+    },
+    async setChat(){
+      let self = this
+      this.chatId = funcs.getURLParam('chat-id')
+      if(this.chatId && !localStorage['chatId']) {
+        localStorage['chatId'] = this.chatId
       }
-    })
-    let condition = window.location.href.includes
-    if(this.hasChatId && this.productId && window.location.href.includes(this.productId)) {
+      this.productId = funcs.getURLParam('product-id')
+      if(this.productId == 'undefined') this.productId = null
+      if(!this.chatId) {
+        this.chatId = localStorage['chatId']
+        // localStorage.removeItem('chatId')
+      }
+      if(!this.productId) {
+        this.productId = localStorage['productId']
+        localStorage.removeItem('productId')
+        if(this.productId == 'undefined') this.productId = null
+      }
+      this.hasChatId = !!this.chatId
       await this.$forceUpdate()
-      let pm = document.querySelector('div.ac-panel')
-      this.adminPanelHeight = pm ? pm.offsetHeight : 0
-      document.getElementById('sochi__chat').style.setProperty('--admin-panel-height', this.adminPanelHeight)
-      if(pm) this.$refs.top.style.top = this.adminPanelHeight + 'px'
-      window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
-      await this.getProducts()
+      if(this.hasChatId){
+        await this.getProducts()
+        this.setChatTop()
+      }
+      if(this.productId && window.location.href.includes(this.productId)){
+        this.varShowInputs = true
+        window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
+      }
+        this.hideSiteElements()
+        setTimeout((()=> this.hideSiteElements()), 3000)
+    },
+    setChatTop(){
+      this.makeTopHideOnMobile()
+      this.moveSiteDown()
+    },
+    makeTopHideOnMobile(){
       window.addEventListener('scroll', function(e){
         if((window.scrollY < self.$refs.products.offsetHeight + 10 ||
             window.scrollY < self.pageYOffset - 10)){
@@ -187,6 +236,12 @@ export default {
           self.pageYOffset = window.scrollY
         }
       })
+    },
+    moveSiteDown(){
+      let pm = document.querySelector('div.ac-panel')
+      this.adminPanelHeight = pm ? pm.offsetHeight : 0
+      document.getElementById('sochi__chat').style.setProperty('--admin-panel-height', this.adminPanelHeight)
+      if(pm) this.$refs.top.style.top = this.adminPanelHeight + 'px'
       let h = document.getElementById('header')
       if(h){
         h.style.position = 'relative'
@@ -196,21 +251,7 @@ export default {
       if(m) m.style.position = 'relative'
       let f = document.getElementById('footer')
       if(f) f.style.position = 'relative'
-      this.hideSiteElements()
-      setTimeout((()=> this.hideSiteElements()), 3000)
-    }
-    if(localStorage.getItem('chat_education_ended') != 'true'){
-      self.fake = true
-      this.setFakeElementsForEducation()
-      setTimeout(function(){self.$refs.hints.run()}, 100)
-    } else self.fake = false
-    window.addEventListener('keydown', function(e){
-      if(e.code == "KeyE" && e.shiftKey && e.ctrlKey){
-        localStorage.setItem('chat_education_ended', false)
-      }
-    })
-  },
-  methods: {
+    },
     setFakeElementsForEducation(){
       let el = this.getNeededFakeElement()
       if(el) this.addNeededFakeElement(el)
@@ -315,7 +356,7 @@ export default {
     async clickSend(){
       let data = {
         counter_not_read_messages: this.currentProduct.count_unread_client_messages,
-        id_product: this.currentProduct.product_id,
+        id_product: this.currentProduct ? this.currentProduct.product_id : null,
         id_work: this.currentProduct.work_id
       }
       this.$socket.emit('chat counter', data)
@@ -334,7 +375,7 @@ export default {
       let link = 'https://serviceapi.elitesochi.com/esmain/bromobile/get-chat-messages'
       let data = {
         work_id: this.currentProduct.work_id,
-        product_id: this.currentProduct.product_id,
+        product_id: this.currentProduct ? this.currentProduct.product_id : null,
         per_page: 10,
         page: this.currentPage,
       }
@@ -410,14 +451,14 @@ export default {
     setReadMessages(){
       let formData = {}
       formData['work_id'] = this.currentProduct.work_id
-      formData['product_id'] = this.currentProduct.product_id
+      formData['product_id'] = this.currentProduct ? this.currentProduct.product_id : null
       funcs.post(this, 'https://serviceapi.elitesochi.com/esmain/bromobile/set-read-message', formData)
-      this.$socket.emit('chat read', {product_id: this.currentProduct.product_id})
+      this.$socket.emit('chat read', { product_id: this.currentProduct ? this.currentProduct.product_id : null })
     },
     productClass(prod){
       let result = ''
       if(parseInt(prod.count_unread_client_messages) > 0 || this.fake) result += " chat__product--attention"
-      if(prod.product_id == this.currentProduct.product_id) result += " chat__product--current"
+      if(this.currentProduct && prod.product_id == this.currentProduct.product_id) result += " chat__product--current"
       return result
     },
     async getProducts(){
@@ -426,6 +467,10 @@ export default {
       let response = await funcs.get(this, link)
       if(response.status == 200){
         this.products = await response.data
+        if(!this.products || this.products.length == 0) {
+          this.showMain = false
+          return
+        }
         this.productsLoader = false
         await this.makeLinks()
         this.currentProduct = await this.products.find(p => p.product_id == this.productId)
