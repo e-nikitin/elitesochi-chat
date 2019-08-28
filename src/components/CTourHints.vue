@@ -165,7 +165,7 @@ export default {
           i++
         } while ((!el || !funcs.isElementInViewport(el)) && i < classes.length)
         if(el && funcs.isElementInViewport(el)) result.push(el)
-        else console.error(`CTourHint: can not find element in viewport (class = ${step.class})`)
+        else console.warn(`CTourHint: can not find element in viewport (class = ${step.class})`)
       }
       if(step.classes && step.classes.length > 0){
         step.classes.forEach(_class => {
@@ -176,27 +176,27 @@ export default {
             i++
           } while ((!el || !funcs.isElementInViewport(el)) && i < classes.length)
           if(el && funcs.isElementInViewport(el)) result.push(el)
-          else console.error(`CTourHint: can not find element in viewport (in classes class = ${_class})`)
+          else console.warn(`CTourHint: can not find element in viewport (in classes class = ${_class})`)
         })
       }
       if(step.id) {
         el = document.getElementById(step.id)
         if(el && funcs.isElementInViewport(el)) result.push(el)
-        else console.error(`CTourHint: can not find element in viewport (id = ${step.id})`)
+        else console.warn(`CTourHint: can not find element in viewport (id = ${step.id})`)
       }
       if(step.ids && step.ids.length > 0){
         step.ids.forEach(id => {
           el = document.getElementById(id)
           if(el && funcs.isElementInViewport(el)) result.push(el)
-          else console.error(`CTourHint: can not find element in viewport (in ids id = ${id})`)
+          else console.warn(`CTourHint: can not find element in viewport (in ids id = ${id})`)
         })
       }
       if(step.el && funcs.isElementInViewport(el)) result.push(step.el)
-      else console.error('CTourHint: can not find element in viewport el = ', step.el)
+      else console.warn('CTourHint: can not find element in viewport el = ', step.el)
       if(step.els && step.els.length > 0){
         step.els.forEach(_el => {
           if(_el && funcs.isElementInViewport(el)) result.push(_el)
-          else console.error('CTourHint: can not find element in viewport in els el = ', _el)
+          else console.warn('CTourHint: can not find element in viewport in els el = ', _el)
         })
       }
       return result
@@ -213,7 +213,7 @@ export default {
           i++
         } while ((!el || !funcs.isElementInViewport(el)) && i < classes.length)
         if(el && funcs.isElementInViewport(el)) result.push(el)
-        else console.error(`CTourHint: can not find element in viewport (classShow = ${step.class})`)
+        else console.warn(`CTourHint: can not find element in viewport (classShow = ${step.class})`)
       }
       if(step.classesShow && step.classesShow.length > 0){
         step.classesShow.forEach(_class => {
@@ -224,27 +224,27 @@ export default {
             i++
           } while ((!el || !funcs.isElementInViewport(el)) && i < classesShow.length)
           if(el && funcs.isElementInViewport(el)) result.push(el)
-          else console.error(`CTourHint: can not find element in viewport (in classesShow class = ${_class})`)
+          else console.warn(`CTourHint: can not find element in viewport (in classesShow class = ${_class})`)
         })
       }
       if(step.idShow) {
         el = document.getElementById(step.idShow)
         if(el && funcs.isElementInViewport(el)) result.push(el)
-        else console.error(`CTourHint: can not find element in viewport (idShow = ${step.idShow})`)
+        else console.warn(`CTourHint: can not find element in viewport (idShow = ${step.idShow})`)
       }
       if(step.idsShow && step.idsShow.length > 0){
         step.idsShow.forEach(id => {
           el = document.getElementById(id)
           if(el && funcs.isElementInViewport(el)) result.push(el)
-          else console.error(`CTourHint: can not find element in viewport (in idsShow id = ${id})`)
+          else console.warn(`CTourHint: can not find element in viewport (in idsShow id = ${id})`)
         })
       }
       if(step.elShow && funcs.isElementInViewport(step.elShow)) result.push(step.elShow)
-      else console.error('CTourHint: can not find element in viewport elShow = ', step.elShow)
+      else console.warn('CTourHint: can not find element in viewport elShow = ', step.elShow)
       if(step.elsShow && step.elsShow.length > 0){
         step.elsShow.forEach(_el => {
           if(_el && funcs.isElementInViewport(el)) result.push(_el)
-          else console.error('CTourHint: can not find element in viewport in elsShow el = ', _el)
+          else console.warn('CTourHint: can not find element in viewport in elsShow el = ', _el)
         })
       }
       return result

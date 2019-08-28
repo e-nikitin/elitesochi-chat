@@ -73,7 +73,7 @@ export default {
     return {
       varShowInputs: false,
       showMain: true,
-      fake: false,
+      fake: true,
       showChat: false,
       products: [],
       currentProduct: {},
@@ -156,16 +156,17 @@ export default {
   async mounted(){
     this.productsLoader = true
     let self = this
-    this.subscribeChatMessage()
-    this.setChat()
-    this.setEducation()
+    await this.subscribeChatMessage()
+    await this.setChat()
+    await this.setEducation()
   },
   methods: {
     setEducation(){
+      let self = this
       if(localStorage.getItem('chat_education_ended') != 'true'){
         self.fake = true
         this.setFakeElementsForEducation()
-        setTimeout(function(){self.$refs.hints.run()}, 100)
+        setTimeout(function(){self.$refs.hints.run()}, 500)
       } else self.fake = false
       window.addEventListener('keydown', function(e){
         if(e.code == "KeyE" && e.shiftKey && e.ctrlKey){
