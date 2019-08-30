@@ -19,6 +19,10 @@
     height: var(--height, unset);
     max-height: var(--height, unset);
     min-height: var(--height, unset);
+    pointer-events: none;
+    &:hover{
+      pointer-events: none;
+    }
     &--show{
       box-shadow: none;
     }
