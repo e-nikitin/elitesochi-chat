@@ -156,9 +156,9 @@ export default {
   async mounted(){
     this.productsLoader = true
     let self = this
-    await this.subscribeChatMessage()
-    await this.setChat()
-    await this.setEducation()
+    await self.subscribeChatMessage()
+    await self.setChat()
+    await self.setEducation()
   },
   methods: {
     setEducation(){
@@ -192,8 +192,7 @@ export default {
         }
       })
     },
-    async setChat(){
-      let self = this
+    checkKeysParams(){
       this.chatId = funcs.getURLParam('chat-id')
       if(this.chatId && !localStorage['chatId']) {
         localStorage['chatId'] = this.chatId
@@ -210,16 +209,23 @@ export default {
         if(this.productId == 'undefined') this.productId = null
       }
       this.hasChatId = !!this.chatId
+    },
+    setKeysParams(){
+      this.varShowInputs = true
+      window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
+      this.hideSiteElements()
+      setTimeout((()=> this.hideSiteElements()), 3000)
+    },
+    async setChat(){
+      let self = this
+      this.checkKeysParams()
       await this.$forceUpdate()
       if(this.hasChatId){
         await this.getProducts()
         this.setChatTop()
       }
       if(this.productId && window.location.href.includes(this.productId)){
-        this.varShowInputs = true
-        window.history.pushState(null, null, window.location.pathname + `?chat-id=${this.chatId}&product-id=${this.productId}`)
-        this.hideSiteElements()
-        setTimeout((()=> this.hideSiteElements()), 3000)
+        this.setKeysParams()
       }
     },
     setChatTop(){
@@ -288,7 +294,7 @@ export default {
       element.style.position = 'fixed'
       element.style.bottom = '0'
       element.style.width = '100vw'
-      this.$refs.fake.appendChild(element)
+      if(this.$refs.fake) this.$refs.fake.appendChild(element)
     },
     isNewBuildingPage(){
       let link = document.URL || window.location.href
@@ -469,6 +475,7 @@ export default {
       let response = await funcs.get(this, link)
       if(response.status == 200){
         this.products = await response.data
+        await this.$forceUpdate
         if(!this.products || this.products.length == 0) {
           this.showMain = false
           return
@@ -476,9 +483,9 @@ export default {
         this.productsLoader = false
         await this.makeLinks()
         this.currentProduct = await this.products.find(p => p.product_id == this.productId)
-        await this.$forceUpdate()
         await this.setProductsStyle()
         await this.setMoveProducts()
+        await this.$forceUpdate()
       }
     },
 
@@ -507,11 +514,8 @@ export default {
       let itemsEl = this.$refs.products
       let wrapperEl = this.$refs.productsWrapper
       let wrapperWidth = this.$refs.productsWrapper.offsetWidth
-      let itemWidth = null
-      await setTimeout(function(){
-        itemWidth = document.querySelector('.chat__product').offsetWidth
-        self.isMoveProducts = carousel.setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth)
-      }, 50)
+      let itemWidth = window.innerWidth > 900 ? 202 : 97
+      self.isMoveProducts = carousel.setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth)
     },
     handleMouseDown(e){
       if(this.isMoveProducts) {

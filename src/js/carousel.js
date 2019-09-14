@@ -1,7 +1,6 @@
 const carousel = {
   moved: false,
   setItemsElStyle(items, currentItem, itemsEl, wrapperEl, wrapperWidth, itemWidth){
-
     let isMove = false
     let width = 0
     let l = items.length
