@@ -193,15 +193,22 @@ export default {
       })
     },
     checkKeysParams(){
+      let born = new Date().getTime()
+      let lifetime = 1000 * 60 * 60 * 24 * 7
       this.chatId = funcs.getURLParam('chat-id')
       if(this.chatId && !localStorage['chatId']) {
         localStorage['chatId'] = this.chatId
+        localStorage.setItem('chatBorn', born)
       }
       this.productId = funcs.getURLParam('product-id')
       if(this.productId == 'undefined') this.productId = null
       if(!this.chatId) {
-        this.chatId = localStorage['chatId']
-        // localStorage.removeItem('chatId')
+        if(new Date().getTime() - localStorage['chatBorn'] < lifetime){
+          this.chatId = localStorage['chatId']
+        } else {
+          this.removeKeysParams()
+          return
+        }
       }
       if(!this.productId) {
         this.productId = localStorage['productId']
@@ -209,6 +216,24 @@ export default {
         if(this.productId == 'undefined') this.productId = null
       }
       this.hasChatId = !!this.chatId
+    },
+    removeKeysParams(){
+      localStorage.removeItem('chatId')
+      localStorage.removeItem('productId')
+      localStorage.removeItem('chatBorn')
+      this.moveSiteUp()
+      this.hasChatId = false
+    },
+    handleKeyDownRemoveKeyParams(e){
+      let self = this
+      if(e.code == 'KeyQ' && (e.ctrlKey || e.altKey)){
+        self.removeKeysParams()
+        window.removeEventListener('keydown', self.handleKeyDownRemoveKeyParams)
+      }
+
+    },
+    addKeyDownRemoveParams(){
+      window.addEventListener('keydown', this.handleKeyDownRemoveKeyParams)
     },
     setKeysParams(){
       this.varShowInputs = true
@@ -221,8 +246,10 @@ export default {
       this.checkKeysParams()
       await this.$forceUpdate()
       if(this.hasChatId){
+        this.addKeyDownRemoveParams()
         await this.getProducts()
         this.setChatTop()
+        console.log('Press Ctrl + q or Alt + q to close Chat')
       }
       if(this.productId && window.location.href.includes(this.productId)){
         this.setKeysParams()
@@ -259,6 +286,21 @@ export default {
       if(m) m.style.position = 'relative'
       let f = document.getElementById('footer')
       if(f) f.style.position = 'relative'
+    },
+    moveSiteUp(){
+      let pm = document.querySelector('div.ac-panel')
+      this.adminPanelHeight = pm ? pm.offsetHeight : 0
+      document.getElementById('sochi__chat').style.setProperty('--admin-panel-height', this.adminPanelHeight)
+      if(pm && this.$refs.top) this.$refs.top.style.top = ''
+      let h = document.getElementById('header')
+      if(h){
+        h.style.position = ''
+        h.style.marginTop = ''
+      }
+      let m = document.getElementById('main')
+      if(m) m.style.position = ''
+      let f = document.getElementById('footer')
+      if(f) f.style.position = ''
     },
     setFakeElementsForEducation(){
       let el = this.getNeededFakeElement()

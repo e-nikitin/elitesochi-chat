@@ -50,6 +50,7 @@ export default {
       let a = funcs.getURLParam('uid')
       localStorage.setItem('chatId', a)
       localStorage.setItem('productId', this.product.product_id)
+      localStorage.setItem('chatBorn', new Date().getTime())
     },
     defineWordForm(num){
       if(num == null) return ''
